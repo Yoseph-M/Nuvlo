@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { listings } from "../lib/mock/listings";
-import { ListingGrid } from "../components/listing/ListingGrid";
-import { MagneticButton } from "../components/ui/MagneticButton";
-import { StaggerReveal } from "../components/reveal/StaggerReveal";
+import { ListingGrid } from "../../components/listing/ListingGrid";
+import { MagneticButton } from "../../components/ui/MagneticButton";
+import { StaggerReveal } from "../../components/reveal/StaggerReveal";
 import { useGsapContext } from "../lib/gsap/useGsapContext";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
