@@ -5,9 +5,9 @@ import { flipBridge } from "../lib/gsap/flipBridge";
 import { Flip } from "gsap/Flip";
 import { gsap } from "gsap";
 import { registerGsap } from "../lib/gsap/register";
-import { StaggerReveal } from "../components/reveal/StaggerReveal";
-import { MagneticButton } from "../components/ui/MagneticButton";
-import { ListingCard } from "../components/listing/ListingCard";
+import { StaggerReveal } from "../../components/reveal/StaggerReveal";
+import { MagneticButton } from "../../components/ui/MagneticButton";
+import { ListingCard } from "../../components/listing/ListingCard";
 
 export const Route = createFileRoute("/listing/$id")({
   loader: ({ params }) => {
