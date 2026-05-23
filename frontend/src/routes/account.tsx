@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useAuth } from "../lib/mock/store";
-import { MagneticButton } from "../components/ui/MagneticButton";
+import { MagneticButton } from "../../components/ui/MagneticButton";
 
 export const Route = createFileRoute("/account")({
   component: Account,
