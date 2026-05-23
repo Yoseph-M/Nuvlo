@@ -9,8 +9,8 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import { RouteTransition } from "../components/transitions/RouteTransition";
-import { SiteNav } from "../components/nav/SiteNav";
+import { RouteTransition } from "../../components/transitions/RouteTransition";
+import { SiteNav } from "../../components/nav/SiteNav";
 
 function NotFoundComponent() {
   return (
