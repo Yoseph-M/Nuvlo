@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/mock/store";
-import { HostWizard } from "../components/wizard/HostWizard";
+import { HostWizard } from "../../components/wizard/HostWizard";
 import { gsap } from "gsap";
 import { registerGsap } from "../lib/gsap/register";
 
