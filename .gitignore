@@ -58,3 +58,5 @@ dist
 # Environment
 .env
 .tanstack
+.wrangler/
+.wrangler
