@@ -1,4 +1,4 @@
-import { Schema, model, models, type Document, type Types } from "mongoose";
+import mongoose, { Schema, model, type Document, type Types } from "mongoose";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -76,4 +76,4 @@ const PaymentSchema = new Schema<IPayment>(
 // ---------------------------------------------------------------------------
 
 export const Payment =
-  models.Payment ?? model<IPayment>("Payment", PaymentSchema);
+  (mongoose as any).models.Payment ?? model<IPayment>("Payment", PaymentSchema);

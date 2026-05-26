@@ -1,4 +1,4 @@
-import { Schema, model, models, type Document, type Types } from "mongoose";
+import mongoose, { Schema, model, type Document, type Types } from "mongoose";
 import bcrypt from "bcryptjs";
 
 // ---------------------------------------------------------------------------
@@ -65,4 +65,4 @@ UserSchema.pre("save", async function (next) {
 // ---------------------------------------------------------------------------
 
 /** Re-use existing model during HMR to avoid OverwriteModelError. */
-export const User = models.User ?? model<IUser>("User", UserSchema);
+export const User = (mongoose as any).models.User ?? model<IUser>("User", UserSchema);

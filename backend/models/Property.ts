@@ -1,4 +1,5 @@
-import { Schema, model, models, type Document, type Types } from "mongoose";
+import mongoose, { Schema, model, type Document, type Types } from "mongoose";
+
 
 // ---------------------------------------------------------------------------
 // Types
@@ -103,4 +104,4 @@ PropertySchema.index({ "location.coordinates": "2dsphere" });
 // ---------------------------------------------------------------------------
 
 export const Property =
-  models.Property ?? model<IProperty>("Property", PropertySchema);
+  (mongoose as any).models.Property ?? model<IProperty>("Property", PropertySchema);

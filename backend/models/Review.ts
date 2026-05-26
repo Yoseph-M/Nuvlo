@@ -1,4 +1,5 @@
-import { Schema, model, models, type Document, type Types } from "mongoose";
+import mongoose, { Schema, model, type Document, type Types } from "mongoose";
+
 
 // ---------------------------------------------------------------------------
 // Types
@@ -45,4 +46,4 @@ const ReviewSchema = new Schema<IReview>(
 // ---------------------------------------------------------------------------
 
 export const Review =
-  models.Review ?? model<IReview>("Review", ReviewSchema);
+  (mongoose as any).models.Review ?? model<IReview>("Review", ReviewSchema);

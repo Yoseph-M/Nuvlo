@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import Booking from "../models/Booking";
+import { Booking } from "../models/Booking.ts";
 import { IBooking } from "../models/Booking";
 
 // @desc    Get all bookings

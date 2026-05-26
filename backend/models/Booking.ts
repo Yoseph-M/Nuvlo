@@ -1,4 +1,5 @@
-import { Schema, model, models, type Document, type Types } from "mongoose";
+import mongoose, { Schema, model, type Document, type Types } from "mongoose";
+
 
 // ---------------------------------------------------------------------------
 // Types
@@ -73,4 +74,4 @@ BookingSchema.pre("validate", function (next) {
 // ---------------------------------------------------------------------------
 
 export const Booking =
-  models.Booking ?? model<IBooking>("Booking", BookingSchema);
+  (mongoose as any).models.Booking ?? model<IBooking>("Booking", BookingSchema);

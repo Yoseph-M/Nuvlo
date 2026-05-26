@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import User from "../models/User";
-import { IUser } from "../models/User";
-import { generateToken } from "../utils/generateToken";
+import { User } from "../models/User.ts";
+import { IUser } from "../models/User.ts";
+import generateToken from "../utils/generateToken.ts";
 import bcrypt from "bcryptjs";
 
 // @desc    Register a new user

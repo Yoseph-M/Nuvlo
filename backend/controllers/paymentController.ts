@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import Payment from "../models/Payment";
+import { Payment } from "../models/Payment.ts";
 import { IPayment } from "../models/Payment";
 
 // @desc    Get all payments

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import Message from "../models/Message";
+import { Message } from "../models/Message.ts";
 import { IMessage } from "../models/Message";
 
 // @desc    Get all messages

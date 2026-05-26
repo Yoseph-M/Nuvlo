@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import Review from "../models/Review";
+import { Review } from "../models/Review.ts";
 import { IReview } from "../models/Review";
 
 // @desc    Get all reviews

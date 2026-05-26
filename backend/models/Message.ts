@@ -1,4 +1,5 @@
-import { Schema, model, models, type Document, type Types } from "mongoose";
+import mongoose, { Schema, model, type Document, type Types } from "mongoose";
+
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,4 +53,4 @@ MessageSchema.index({ senderId: 1, receiverId: 1, createdAt: -1 });
 // ---------------------------------------------------------------------------
 
 export const Message =
-  models.Message ?? model<IMessage>("Message", MessageSchema);
+  (mongoose as any).models.Message ?? model<IMessage>("Message", MessageSchema);

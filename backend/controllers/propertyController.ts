@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
-import Property from "../models/Property";
+import { Property } from "../models/Property.ts";
 import { IProperty } from "../models/Property";
 
 // @desc    Get all properties

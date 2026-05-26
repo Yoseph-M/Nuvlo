@@ -3,17 +3,17 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import connectDB from "./config/database";
-import authRoutes from "./routes/auth";
-import propertyRoutes from "./routes/property";
-import bookingRoutes from "./routes/booking";
-import paymentRoutes from "./routes/payment";
-import reviewRoutes from "./routes/review";
-import messageRoutes from "./routes/message";
+import authRoutes from "./routes/auth.ts";
+import propertyRoutes from "./routes/properties.ts";
+import bookingRoutes from "./routes/bookings.ts";
+import paymentRoutes from "./routes/payment.ts";
+import reviewRoutes from "./routes/review.ts";
+import messageRoutes from "./routes/message.ts";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());
