@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AccountRouteImport } from './routes/account'
@@ -16,6 +17,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as HostNewRouteImport } from './routes/host.new'
 
+const VerifyEmailRoute = VerifyEmailRouteImport.update({
+  id: '/verify-email',
+  path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/explore': typeof ExploreRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/host/new': typeof HostNewRoute
   '/listing/$id': typeof ListingIdRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/explore': typeof ExploreRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/host/new': typeof HostNewRoute
   '/listing/$id': typeof ListingIdRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/explore': typeof ExploreRoute
+  '/verify-email': typeof VerifyEmailRoute
   '/host/new': typeof HostNewRoute
   '/listing/$id': typeof ListingIdRoute
 }
@@ -79,16 +88,25 @@ export interface FileRouteTypes {
     | '/account'
     | '/auth'
     | '/explore'
+    | '/verify-email'
     | '/host/new'
     | '/listing/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/account' | '/auth' | '/explore' | '/host/new' | '/listing/$id'
+  to:
+    | '/'
+    | '/account'
+    | '/auth'
+    | '/explore'
+    | '/verify-email'
+    | '/host/new'
+    | '/listing/$id'
   id:
     | '__root__'
     | '/'
     | '/account'
     | '/auth'
     | '/explore'
+    | '/verify-email'
     | '/host/new'
     | '/listing/$id'
   fileRoutesById: FileRoutesById
@@ -98,12 +116,20 @@ export interface RootRouteChildren {
   AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
   ExploreRoute: typeof ExploreRoute
+  VerifyEmailRoute: typeof VerifyEmailRoute
   HostNewRoute: typeof HostNewRoute
   ListingIdRoute: typeof ListingIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verify-email': {
+      id: '/verify-email'
+      path: '/verify-email'
+      fullPath: '/verify-email'
+      preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/explore': {
       id: '/explore'
       path: '/explore'
@@ -154,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
   ExploreRoute: ExploreRoute,
+  VerifyEmailRoute: VerifyEmailRoute,
   HostNewRoute: HostNewRoute,
   ListingIdRoute: ListingIdRoute,
 }

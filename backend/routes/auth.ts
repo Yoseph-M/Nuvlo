@@ -3,7 +3,9 @@ import {
   registerUser, 
   loginUser, 
   logoutUser, 
-  getUserProfile 
+  getUserProfile,
+  verifyEmail,
+  resendVerification
 } from "../controllers/authController";
 import { protect } from "../middleware/authMiddleware";
 
@@ -13,5 +15,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 router.route("/profile").get(protect, getUserProfile);
+router.get("/verify-email/:token", verifyEmail);
+router.post("/resend-verification", resendVerification);
 
 export default router;
