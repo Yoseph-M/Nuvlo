@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { z } from "zod";
 import { useAuth, type Role } from "../lib/mock/store";
-import { MagneticButton } from "../../components/ui/MagneticButton";
+import { MagneticButton } from "../components/ui/MagneticButton";
 import { gsap } from "gsap";
 import { registerGsap } from "../lib/gsap/register";
 

@@ -4,11 +4,11 @@ import {
   listings, ALL_REGIONS, ALL_PROPERTY_TYPES, formatETB,
   type Listing, type PropertyType,
 } from "../lib/mock/listings";
-import { ListingCard } from "../../components/listing/ListingCard";
+import { ListingCard } from "../components/listing/ListingCard";
 import { useFilters } from "../lib/mock/store";
 
 const ExploreMap = lazy(() =>
-  import("../../components/map/ExploreMap").then((m) => ({ default: m.ExploreMap })),
+  import("../components/map/ExploreMap").then((m) => ({ default: m.ExploreMap })),
 );
 
 export const Route = createFileRoute("/explore")({
