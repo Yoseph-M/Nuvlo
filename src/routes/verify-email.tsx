@@ -6,6 +6,7 @@ import { registerGsap } from "../lib/gsap/register";
 import { MagneticButton } from "../components/ui/MagneticButton";
 import { Check, X, Loader2, Mail, AlertCircle, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { authClient } from "../lib/auth-client.ts";
 
 const searchSchema = z.object({
   token: z.string().optional(),
@@ -43,21 +44,21 @@ function VerifyEmailPage() {
 
     const verify = async () => {
       try {
-        const res = await fetch(`/api/auth/verify-email/${token}`);
-        const data = await res.json();
+        const { error } = await authClient.verifyEmail({
+          query: { token }
+        });
         
-        if (res.ok) {
+        if (!error) {
           setStatus("success");
-          setMessage(data.message || "Your email has been verified successfully!");
+          setMessage("Your email has been verified successfully!");
         } else {
           setStatus("error");
-          setMessage(data.message || "Invalid or expired verification token.");
+          setMessage(error.message || "Invalid or expired verification token.");
         }
       } catch (err) {
         console.error("Verification connection error:", err);
-        // Fallback to mock success in demo mode if server connection cannot be established
-        setStatus("success");
-        setMessage("Demo Mode: Your email was verified successfully! (Backend was offline, bypassed gracefully for preview)");
+        setStatus("error");
+        setMessage("Connection failed. Failed to reach verification server.");
       }
     };
 
@@ -73,22 +74,20 @@ function VerifyEmailPage() {
 
     setResending(true);
     try {
-      const res = await fetch("/api/auth/resend-verification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resendEmail }),
+      const { error } = await authClient.sendVerificationEmail({
+        email: resendEmail,
+        callbackURL: `${window.location.origin}/account`,
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(data.message || "Verification link sent to your inbox!");
+      if (!error) {
+        toast.success("Verification link sent to your inbox!");
         setResendEmail("");
       } else {
-        toast.error(data.message || "Failed to resend verification link.");
+        toast.error(error.message || "Failed to resend verification link.");
       }
     } catch (err) {
-      toast.success("Demo Mode: Verification link resent successfully!");
-      setResendEmail("");
+      console.error(err);
+      toast.error("Network error. Failed to resend verification link.");
     } finally {
       setResending(false);
     }
