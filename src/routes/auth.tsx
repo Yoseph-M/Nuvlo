@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { z } from "zod";
-import { useAuth, type Role } from "../lib/mock/store";
+import { authClient } from "../lib/auth-client";
 import { MagneticButton } from "../components/ui/MagneticButton";
 import { gsap } from "gsap";
 import { registerGsap } from "../lib/gsap/register";
@@ -23,9 +23,10 @@ const signInSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+type Role = "guest" | "host" | "admin";
+
 function AuthPage() {
   const navigate = useNavigate();
-  const signIn = useAuth((s) => s.signIn);
   
   // Tab Mode
   const [mode, setMode] = useState<"signin" | "signup">("signup");
@@ -78,7 +79,7 @@ function AuthPage() {
 
       setLoading(true);
       try {
-        const res = await fetch("/api/auth/register", {
+        const res = await fetch("http://localhost:5001/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, email, password, role }),
@@ -93,9 +94,9 @@ function AuthPage() {
           toast.error(data.message || "Failed to create account.");
         }
       } catch (err) {
-        // Fallback for visual mock mode if backend server is offline during preview
-        setIsRegisteredSuccess(true);
-        toast.success("Demo Mode: Registration successful!");
+        console.error(err);
+        setError("Network error. Please make sure the server is running.");
+        toast.error("Network error. Failed to connect to server.");
       } finally {
         setLoading(false);
       }
@@ -109,29 +110,29 @@ function AuthPage() {
 
       setLoading(true);
       try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
+        const { data, error: authError } = await authClient.signIn.email({
+          email,
+          password,
         });
 
-        const data = await res.json();
-        if (res.ok) {
-          // Log user into local mock store so frontend session syncs nicely
-          signIn(data.email, data.name, data.role || "guest");
-          toast.success(`Welcome back, ${data.name}!`);
-          navigate({ to: data.role === "host" ? "/host/new" : "/account" });
-        } else {
-          if (res.status === 403) {
+        if (authError) {
+          // If unverified email error occurs
+          if (
+            authError.code === "EMAIL_NOT_VERIFIED" || 
+            authError.message?.toLowerCase().includes("verify") ||
+            authError.message?.toLowerCase().includes("verification")
+          ) {
             setIsUnverifiedError(true);
           }
-          setError(data.message || "Invalid credentials.");
+          setError(authError.message || "Invalid credentials.");
+        } else {
+          toast.success(`Welcome back!`);
+          const userRole = data?.user?.role || "guest";
+          navigate({ to: userRole === "host" ? "/host/new" : "/account" });
         }
       } catch (err) {
-        // Fallback for visual mock mode if server is offline
-        signIn(email, "Ada Lovelace", "guest");
-        toast.success("Demo Mode: Logged in successfully!");
-        navigate({ to: "/account" });
+        console.error(err);
+        setError("Failed to sign in. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -139,23 +140,24 @@ function AuthPage() {
   };
 
   const handleResend = async () => {
+    setLoading(true);
     try {
-      const res = await fetch("/api/auth/resend-verification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+      const { error: resendError } = await authClient.sendVerificationEmail({
+        email,
+        callbackURL: `${window.location.origin}/account`,
       });
 
-      const data = await res.json();
-      if (res.ok) {
+      if (resendError) {
+        toast.error(resendError.message || "Failed to resend verification link.");
+      } else {
         toast.success("Verification link sent! Please check your email.");
         setIsUnverifiedError(false);
-      } else {
-        toast.error(data.message || "Failed to resend verification link.");
       }
     } catch (err) {
-      toast.success("Demo Mode: Verification link resent successfully!");
-      setIsUnverifiedError(false);
+      console.error(err);
+      toast.error("Network error. Failed to resend verification link.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -287,7 +289,17 @@ function AuthPage() {
             </div>
 
             <div data-fld className="mt-6">
-              <label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Password</label>
+              <div className="flex justify-between items-baseline">
+                <label className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Password</label>
+                {mode === "signin" && (
+                  <Link
+                    to="/forgot-password"
+                    className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-ink transition-colors underline underline-offset-2"
+                  >
+                    Forgot?
+                  </Link>
+                )}
+              </div>
               <input
                 type="password"
                 required

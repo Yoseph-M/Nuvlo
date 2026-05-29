@@ -1,6 +1,6 @@
 import { createFileRoute, Navigate, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "../lib/mock/store";
+import { authClient } from "../lib/auth-client.ts";
 import { HostWizard } from "../components/wizard/HostWizard";
 import { gsap } from "gsap";
 import { registerGsap } from "../lib/gsap/register";
@@ -10,7 +10,8 @@ export const Route = createFileRoute("/host/new")({
 });
 
 function HostNew() {
-  const user = useAuth((s) => s.user);
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
   const navigate = useNavigate();
   const successRef = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(false);
@@ -32,6 +33,14 @@ function HostNew() {
     const t = setTimeout(() => navigate({ to: "/account" }), 3200);
     return () => clearTimeout(t);
   }, [done, navigate]);
+
+  if (isPending) {
+    return (
+      <main className="flex min-h-screen items-center justify-center px-6 pt-24">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Loading session...</p>
+      </main>
+    );
+  }
 
   if (!user) return <Navigate to="/auth" />;
   if (user.role !== "host") {

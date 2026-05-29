@@ -1,9 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { useAuth } from "../../lib/mock/store";
+import { authClient } from "../../lib/auth-client.ts";
 
 export function SiteNav() {
-  const user = useAuth((s) => s.user);
-  const signOut = useAuth((s) => s.signOut);
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+  };
+
   return (
     <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-8 py-6 mix-blend-difference text-paper">
       <Link to="/" className="flex items-baseline gap-2 font-display text-2xl tracking-tight">
@@ -24,9 +29,9 @@ export function SiteNav() {
         {user ? (
           <>
             <Link to="/account" className="opacity-70 hover:opacity-100">
-              {user.name.split(" ")[0]}
+              {user.name?.split(" ")[0]}
             </Link>
-            <button onClick={signOut} className="opacity-70 hover:opacity-100 uppercase">
+            <button onClick={handleSignOut} className="opacity-70 hover:opacity-100 uppercase cursor-pointer">
               Sign out
             </button>
           </>
