@@ -1,160 +1,113 @@
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
-import mongoose from "mongoose";
 import app from "../../backend/server.ts";
-import { User } from "../../backend/models/User.ts";
+import { ZeroBounceService } from "../../backend/services/zeroBounceService.ts";
+import { auth } from "../../backend/auth.ts";
 
-// Mock mailer so tests don't send real emails
-vi.mock("../../backend/utils/mailer.ts", () => ({
-  sendVerificationEmail: vi.fn().mockResolvedValue({ messageId: "mock-message-id" }),
-}));
-
-// Mock database connection to prevent timeouts
-vi.spyOn(mongoose, "connect").mockResolvedValue({} as any);
-
-// Simple in-memory database store for tests
-const mockUsersDb: any[] = [];
-
-// Mock mongoose User model methods
-vi.mock("../../backend/models/User.ts", async (importOriginal) => {
-  const original = await importOriginal<any>();
-  
-  const MockUserClass = function(this: any, data: any) {
-    Object.assign(this, data);
-    this._id = this._id || new mongoose.Types.ObjectId().toString();
-    this.isVerified = this.isVerified !== undefined ? this.isVerified : false;
-    this.save = vi.fn().mockImplementation(async function(this: any) {
-      const idx = mockUsersDb.findIndex(u => u.email === this.email);
-      if (idx >= 0) {
-        mockUsersDb[idx] = this;
-      } else {
-        mockUsersDb.push(this);
-      }
-      return this;
-    });
-    this.matchPassword = async function(entered: string) {
-      return entered === "password123";
-    };
-  };
-
+// Mock ZeroBounceService
+vi.mock("../../backend/services/zeroBounceService.ts", () => {
   return {
-    ...original,
-    User: {
-      findOne: vi.fn().mockImplementation(async (query: any) => {
-        if (query.email) {
-          const user = mockUsersDb.find(u => u.email === query.email);
-          if (user) {
-            return {
-              ...user,
-              save: vi.fn().mockImplementation(async function(this: any) {
-                const idx = mockUsersDb.findIndex(u => u.email === user.email);
-                mockUsersDb[idx] = { ...user, ...this };
-                return this;
-              }),
-            };
-          }
-          return null;
-        }
-        if (query.verificationToken) {
-          const user = mockUsersDb.find(u => u.verificationToken === query.verificationToken);
-          if (user) {
-            return {
-              ...user,
-              save: vi.fn().mockImplementation(async function(this: any) {
-                const idx = mockUsersDb.findIndex(u => u.verificationToken === user.verificationToken);
-                mockUsersDb[idx] = { ...user, ...this };
-                return this;
-              }),
-            };
-          }
-          return null;
-        }
-        return null;
-      }),
-      create: vi.fn().mockImplementation(async (data: any) => {
-        const newUser = {
-          ...data,
-          _id: new mongoose.Types.ObjectId().toString(),
-          isVerified: data.isVerified !== undefined ? data.isVerified : false,
-        };
-        mockUsersDb.push(newUser);
-        return {
-          ...newUser,
-          save: vi.fn(),
-        };
-      }),
-      deleteMany: vi.fn().mockImplementation(async () => {
-        mockUsersDb.length = 0;
-        return { deletedCount: mockUsersDb.length };
-      }),
-    }
+    ZeroBounceService: {
+      validateEmail: vi.fn(),
+    },
   };
 });
 
-describe("Email Verification API Integration", () => {
-  afterAll(async () => {
-    mockUsersDb.length = 0;
+// Mock Better Auth
+vi.mock("../../backend/auth.ts", () => {
+  return {
+    auth: {
+      api: {
+        signUpEmail: vi.fn(),
+      },
+    },
+  };
+});
+
+describe("Better Auth & ZeroBounce Integration", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
-  it("should register a user with isVerified false and generate token", async () => {
+  it("should reject registration if ZeroBounce email validation fails", async () => {
+    // Setup ZeroBounce mock to fail
+    vi.mocked(ZeroBounceService.validateEmail).mockResolvedValue({
+      valid: false,
+      reason: "Disposable or temporary email addresses are not allowed.",
+    });
+
     const res = await request(app)
       .post("/api/auth/register")
       .send({
-        name: "Test Verify",
-        email: "testverify@nuvlo.com",
-        password: "password123",
+        name: "Test User",
+        email: "temp@disposable.com",
+        password: "securePassword123",
         role: "guest",
       });
 
+    // Verify response
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("Disposable or temporary email addresses are not allowed.");
+
+    // Verify signUpEmail was NOT called
+    expect(auth.api.signUpEmail).not.toHaveBeenCalled();
+  });
+
+  it("should complete registration if ZeroBounce validation succeeds", async () => {
+    // Setup ZeroBounce mock to succeed
+    vi.mocked(ZeroBounceService.validateEmail).mockResolvedValue({
+      valid: true,
+      reason: "",
+    });
+
+    // Setup Better Auth mock to succeed
+    const mockUser = {
+      id: "user-123",
+      email: "valid@gmail.com",
+      name: "Test User",
+      role: "guest",
+    };
+    vi.mocked(auth.api.signUpEmail).mockResolvedValue(mockUser as any);
+
+    const res = await request(app)
+      .post("/api/auth/register")
+      .send({
+        name: "Test User",
+        email: "valid@gmail.com",
+        password: "securePassword123",
+        role: "guest",
+      });
+
+    // Verify response
     expect(res.status).toBe(201);
-    expect(res.body.message).toContain("Registration successful!");
-    expect(res.body.email).toBe("testverify@nuvlo.com");
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe("Registration successful. Please check your email to verify your account.");
+    expect(res.body.user).toEqual(mockUser);
 
-    const user = mockUsersDb.find(u => u.email === "testverify@nuvlo.com");
-    expect(user).toBeDefined();
-    expect(user.isVerified).toBe(false);
-    expect(user.verificationToken).toBeTypeOf("string");
-    expect(user.verificationTokenExpires).toBeInstanceOf(Date);
+    // Verify signUpEmail was called with proper details
+    expect(auth.api.signUpEmail).toHaveBeenCalledWith({
+      body: {
+        email: "valid@gmail.com",
+        password: "securePassword123",
+        name: "Test User",
+        role: "guest",
+      },
+    });
   });
 
-  it("should not allow unverified user to login", async () => {
+  it("should reject registration if required fields are missing", async () => {
     const res = await request(app)
-      .post("/api/auth/login")
+      .post("/api/auth/register")
       .send({
-        email: "testverify@nuvlo.com",
-        password: "password123",
+        email: "valid@gmail.com",
       });
 
-    expect(res.status).toBe(403);
-    expect(res.body.message).toContain("Email not verified");
-  });
+    // Verify response
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("Name, email, and password are required");
 
-  it("should verify user email with correct token", async () => {
-    const user = mockUsersDb.find(u => u.email === "testverify@nuvlo.com");
-    const token = user.verificationToken;
-
-    const res = await request(app)
-      .get(`/api/auth/verify-email/${token}`);
-
-    expect(res.status).toBe(200);
-    expect(res.body.message).toContain("Email verified successfully");
-
-    const updatedUser = mockUsersDb.find(u => u.email === "testverify@nuvlo.com");
-    expect(updatedUser.isVerified).toBe(true);
-    expect(updatedUser.verificationToken).toBeNull();
-    expect(updatedUser.verificationTokenExpires).toBeNull();
-  });
-
-  it("should allow verified user to login successfully", async () => {
-    const res = await request(app)
-      .post("/api/auth/login")
-      .send({
-        email: "testverify@nuvlo.com",
-        password: "password123",
-      });
-
-    expect(res.status).toBe(200);
-    expect(res.body.token).toBeDefined();
-    expect(res.body.email).toBe("testverify@nuvlo.com");
+    // Verify ZeroBounce validation & Better Auth were not called
+    expect(ZeroBounceService.validateEmail).not.toHaveBeenCalled();
+    expect(auth.api.signUpEmail).not.toHaveBeenCalled();
   });
 });
