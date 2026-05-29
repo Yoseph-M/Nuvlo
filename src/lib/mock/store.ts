@@ -1,26 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-
-export type Role = "guest" | "host";
-export type User = { id: string; email: string; name: string; role: Role };
-
-type AuthState = {
-  user: User | null;
-  signIn: (email: string, name: string, role: Role) => void;
-  signOut: () => void;
-};
-
-export const useAuth = create<AuthState>()(
-  persist(
-    (set) => ({
-      user: null,
-      signIn: (email, name, role) =>
-        set({ user: { id: `U-${Date.now()}`, email, name, role } }),
-      signOut: () => set({ user: null }),
-    }),
-    { name: "luxe-auth" },
-  ),
-);
 
 export type Filters = {
   minPrice: number;
