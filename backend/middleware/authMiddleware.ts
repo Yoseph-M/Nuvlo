@@ -1,48 +1,37 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { User } from "../models/User.ts";
-import { IUser } from "../models/User.ts";
+import { fromNodeHeaders } from "better-auth/node";
+import { auth } from "../auth.ts";
 
 export const protect = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  let token;
+  try {
+    const session = await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers),
+    });
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
-
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || "fallback_secret"
-      ) as { id: string };
-
-      req.user = await User.findById(decoded.id).select("-password");
-
-      next();
-    } catch (error) {
-      res.status(401);
-      throw new Error("Not authorized, token failed");
+    if (!session || !session.user) {
+      return res.status(401).json({ message: "Not authorized, no session found" });
     }
-  }
 
-  if (!token) {
-    res.status(401);
-    throw new Error("Not authorized, no token");
+    // Attach user and session to request object
+    req.user = session.user;
+    (req as any).session = session.session;
+
+    next();
+  } catch (error: any) {
+    console.error("Auth middleware error:", error);
+    return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
 
 // Admin middleware
 export const admin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user && (req.user as IUser).role === "admin") {
+  if (req.user && (req.user as any).role === "admin") {
     next();
   } else {
-    res.status(403);
-    throw new Error("Not authorized as an admin");
+    return res.status(403).json({ message: "Not authorized as an admin" });
   }
 };
