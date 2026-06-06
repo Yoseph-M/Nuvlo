@@ -35,3 +35,21 @@ export const admin = (req: Request, res: Response, next: NextFunction) => {
     return res.status(403).json({ message: "Not authorized as an admin" });
   }
 };
+
+// Host middleware
+export const isHost = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && (req.user as any).role === "host") {
+    next();
+  } else {
+    return res.status(403).json({ message: "Not authorized as a host" });
+  }
+};
+
+// Verified Host middleware
+export const isVerifiedHost = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user && (req.user as any).role === "host" && (req.user as any).emailVerified === true) {
+    next();
+  } else {
+    return res.status(403).json({ message: "Not authorized or host is not verified" });
+  }
+};

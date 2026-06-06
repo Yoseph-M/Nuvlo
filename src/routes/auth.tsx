@@ -27,22 +27,22 @@ type Role = "guest" | "host" | "admin";
 
 function AuthPage() {
   const navigate = useNavigate();
-  
+
   // Tab Mode
   const [mode, setMode] = useState<"signin" | "signup">("signup");
-  
+
   // Form Fields
   const [role, setRole] = useState<Role>("guest");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+
   // States
   const [error, setError] = useState<string | null>(null);
   const [isUnverifiedError, setIsUnverifiedError] = useState(false);
   const [isRegisteredSuccess, setIsRegisteredSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const formRef = useRef<HTMLFormElement>(null);
   const successRef = useRef<HTMLDivElement>(null);
 
@@ -54,10 +54,10 @@ function AuthPage() {
   const animateForm = () => {
     const container = isRegisteredSuccess ? successRef.current : formRef.current;
     if (!container) return;
-    
+
     // Clear any previous animations
     gsap.killTweensOf(container.querySelectorAll("[data-fld]"));
-    
+
     gsap.fromTo(
       container.querySelectorAll("[data-fld]"),
       { opacity: 0, y: 24 },
@@ -118,7 +118,7 @@ function AuthPage() {
         if (authError) {
           // If unverified email error occurs
           if (
-            authError.code === "EMAIL_NOT_VERIFIED" || 
+            authError.code === "EMAIL_NOT_VERIFIED" ||
             authError.message?.toLowerCase().includes("verify") ||
             authError.message?.toLowerCase().includes("verification")
           ) {
@@ -128,7 +128,9 @@ function AuthPage() {
         } else {
           toast.success(`Welcome back!`);
           const userRole = data?.user?.role || "guest";
-          navigate({ to: userRole === "host" ? "/host/new" : "/account" });
+          const userEmail = data?.user?.email;
+          const dashboardPath = userEmail === "ab@gmail.com" ? "/admin" : userRole === "host" ? "/host" : "/guest";
+          navigate({ to: dashboardPath });
         }
       } catch (err) {
         console.error(err);
@@ -144,7 +146,7 @@ function AuthPage() {
     try {
       const { error: resendError } = await authClient.sendVerificationEmail({
         email,
-        callbackURL: `${window.location.origin}/account`,
+        callbackURL: `${window.location.origin}/auth`,
       });
 
       if (resendError) {
@@ -197,12 +199,12 @@ function AuthPage() {
             <p data-fld className="mt-4 text-xs text-muted-foreground leading-relaxed bg-paper/40 p-4 border border-border rounded-sm">
               Please click the link inside the verification email to verify your email and activate your account.
             </p>
-            
+
             <div data-fld className="mt-8 pt-6 border-t border-border flex flex-col gap-4">
               <MagneticButton onClick={() => { setIsRegisteredSuccess(false); setMode("signin"); }} className="w-full">
                 Go to Sign In
               </MagneticButton>
-              <button 
+              <button
                 onClick={handleResend}
                 className="text-xs text-muted-foreground hover:text-ink transition-colors underline underline-offset-4"
               >
@@ -216,8 +218,8 @@ function AuthPage() {
               {mode === "signup" ? "Create Account." : "Welcome Back."}
             </h1>
             <p data-fld className="mt-3 text-sm text-muted-foreground">
-              {mode === "signup" 
-                ? "Join Nuvlo and explore considered stays across Ethiopia." 
+              {mode === "signup"
+                ? "Join Nuvlo and explore considered stays across Ethiopia."
                 : "Sign in to manage your luxury bookings."
               }
             </p>
@@ -227,18 +229,16 @@ function AuthPage() {
               <button
                 type="button"
                 onClick={() => { setMode("signup"); setError(null); setIsUnverifiedError(false); }}
-                className={`flex-1 py-3 text-[11px] uppercase tracking-[0.18em] transition-all duration-300 ${
-                  mode === "signup" ? "bg-ink text-paper font-semibold" : "text-ink hover:bg-paper-2/40"
-                }`}
+                className={`flex-1 py-3 text-[11px] uppercase tracking-[0.18em] transition-all duration-300 ${mode === "signup" ? "bg-ink text-paper font-semibold" : "text-ink hover:bg-paper-2/40"
+                  }`}
               >
                 Sign Up
               </button>
               <button
                 type="button"
                 onClick={() => { setMode("signin"); setError(null); setIsUnverifiedError(false); }}
-                className={`flex-1 py-3 text-[11px] uppercase tracking-[0.18em] transition-all duration-300 ${
-                  mode === "signin" ? "bg-ink text-paper font-semibold" : "text-ink hover:bg-paper-2/40"
-                }`}
+                className={`flex-1 py-3 text-[11px] uppercase tracking-[0.18em] transition-all duration-300 ${mode === "signin" ? "bg-ink text-paper font-semibold" : "text-ink hover:bg-paper-2/40"
+                  }`}
               >
                 Sign In
               </button>
@@ -254,9 +254,8 @@ function AuthPage() {
                       type="button"
                       key={r}
                       onClick={() => setRole(r)}
-                      className={`flex-1 py-2 text-[10px] uppercase tracking-[0.18em] transition-colors ${
-                        role === r ? "bg-ink text-paper" : "text-ink/65 hover:bg-paper-2/40"
-                      }`}
+                      className={`flex-1 py-2 text-[10px] uppercase tracking-[0.18em] transition-colors ${role === r ? "bg-ink text-paper" : "text-ink/65 hover:bg-paper-2/40"
+                        }`}
                     >
                       I'm a {r}
                     </button>
@@ -328,7 +327,7 @@ function AuthPage() {
 
             <div data-fld className="mt-10">
               <MagneticButton type="submit" disabled={loading} className="w-full flex justify-center items-center gap-2">
-                {loading ? "Processing..." : mode === "signup" ? "Create Account" : "Continue"} 
+                {loading ? "Processing..." : mode === "signup" ? "Create Account" : "Continue"}
                 {!loading && <ArrowRight className="h-4 w-4" />}
               </MagneticButton>
             </div>

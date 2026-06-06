@@ -11,13 +11,22 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as HostRouteImport } from './routes/host'
+import { Route as GuestRouteImport } from './routes/guest'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AccountRouteImport } from './routes/account'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HostIndexRouteImport } from './routes/host.index'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
+import { Route as HostVerificationRouteImport } from './routes/host/verification'
+import { Route as HostReviewsRouteImport } from './routes/host/reviews'
+import { Route as HostPropertiesRouteImport } from './routes/host/properties'
 import { Route as HostNewRouteImport } from './routes/host.new'
+import { Route as HostMessagesRouteImport } from './routes/host/messages'
+import { Route as HostCalendarRouteImport } from './routes/host/calendar'
+import { Route as HostBookingsRouteImport } from './routes/host/bookings'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -27,6 +36,16 @@ const VerifyEmailRoute = VerifyEmailRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HostRoute = HostRouteImport.update({
+  id: '/host',
+  path: '/host',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuestRoute = GuestRouteImport.update({
+  id: '/guest',
+  path: '/guest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -44,9 +63,9 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AccountRoute = AccountRouteImport.update({
-  id: '/account',
-  path: '/account',
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -54,96 +73,184 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HostIndexRoute = HostIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => HostRoute,
+} as any)
 const ListingIdRoute = ListingIdRouteImport.update({
   id: '/listing/$id',
   path: '/listing/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HostVerificationRoute = HostVerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
+  getParentRoute: () => HostRoute,
+} as any)
+const HostReviewsRoute = HostReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
+  getParentRoute: () => HostRoute,
+} as any)
+const HostPropertiesRoute = HostPropertiesRouteImport.update({
+  id: '/properties',
+  path: '/properties',
+  getParentRoute: () => HostRoute,
+} as any)
 const HostNewRoute = HostNewRouteImport.update({
-  id: '/host/new',
-  path: '/host/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => HostRoute,
+} as any)
+const HostMessagesRoute = HostMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => HostRoute,
+} as any)
+const HostCalendarRoute = HostCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => HostRoute,
+} as any)
+const HostBookingsRoute = HostBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => HostRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/explore': typeof ExploreRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/guest': typeof GuestRoute
+  '/host': typeof HostRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/host/bookings': typeof HostBookingsRoute
+  '/host/calendar': typeof HostCalendarRoute
+  '/host/messages': typeof HostMessagesRoute
   '/host/new': typeof HostNewRoute
+  '/host/properties': typeof HostPropertiesRoute
+  '/host/reviews': typeof HostReviewsRoute
+  '/host/verification': typeof HostVerificationRoute
   '/listing/$id': typeof ListingIdRoute
+  '/host/': typeof HostIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/explore': typeof ExploreRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/guest': typeof GuestRoute
   '/reset-password': typeof ResetPasswordRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/host/bookings': typeof HostBookingsRoute
+  '/host/calendar': typeof HostCalendarRoute
+  '/host/messages': typeof HostMessagesRoute
   '/host/new': typeof HostNewRoute
+  '/host/properties': typeof HostPropertiesRoute
+  '/host/reviews': typeof HostReviewsRoute
+  '/host/verification': typeof HostVerificationRoute
   '/listing/$id': typeof ListingIdRoute
+  '/host': typeof HostIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/account': typeof AccountRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/explore': typeof ExploreRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/guest': typeof GuestRoute
+  '/host': typeof HostRouteWithChildren
   '/reset-password': typeof ResetPasswordRoute
   '/verify-email': typeof VerifyEmailRoute
+  '/host/bookings': typeof HostBookingsRoute
+  '/host/calendar': typeof HostCalendarRoute
+  '/host/messages': typeof HostMessagesRoute
   '/host/new': typeof HostNewRoute
+  '/host/properties': typeof HostPropertiesRoute
+  '/host/reviews': typeof HostReviewsRoute
+  '/host/verification': typeof HostVerificationRoute
   '/listing/$id': typeof ListingIdRoute
+  '/host/': typeof HostIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/account'
+    | '/admin'
     | '/auth'
     | '/explore'
     | '/forgot-password'
+    | '/guest'
+    | '/host'
     | '/reset-password'
     | '/verify-email'
+    | '/host/bookings'
+    | '/host/calendar'
+    | '/host/messages'
     | '/host/new'
+    | '/host/properties'
+    | '/host/reviews'
+    | '/host/verification'
     | '/listing/$id'
+    | '/host/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/account'
+    | '/admin'
     | '/auth'
     | '/explore'
     | '/forgot-password'
+    | '/guest'
     | '/reset-password'
     | '/verify-email'
+    | '/host/bookings'
+    | '/host/calendar'
+    | '/host/messages'
     | '/host/new'
+    | '/host/properties'
+    | '/host/reviews'
+    | '/host/verification'
     | '/listing/$id'
+    | '/host'
   id:
     | '__root__'
     | '/'
-    | '/account'
+    | '/admin'
     | '/auth'
     | '/explore'
     | '/forgot-password'
+    | '/guest'
+    | '/host'
     | '/reset-password'
     | '/verify-email'
+    | '/host/bookings'
+    | '/host/calendar'
+    | '/host/messages'
     | '/host/new'
+    | '/host/properties'
+    | '/host/reviews'
+    | '/host/verification'
     | '/listing/$id'
+    | '/host/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AccountRoute: typeof AccountRoute
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   ExploreRoute: typeof ExploreRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  GuestRoute: typeof GuestRoute
+  HostRoute: typeof HostRouteWithChildren
   ResetPasswordRoute: typeof ResetPasswordRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
-  HostNewRoute: typeof HostNewRoute
   ListingIdRoute: typeof ListingIdRoute
 }
 
@@ -161,6 +268,20 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/host': {
+      id: '/host'
+      path: '/host'
+      fullPath: '/host'
+      preLoaderRoute: typeof HostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guest': {
+      id: '/guest'
+      path: '/guest'
+      fullPath: '/guest'
+      preLoaderRoute: typeof GuestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -184,11 +305,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/account': {
-      id: '/account'
-      path: '/account'
-      fullPath: '/account'
-      preLoaderRoute: typeof AccountRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -198,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/host/': {
+      id: '/host/'
+      path: '/'
+      fullPath: '/host/'
+      preLoaderRoute: typeof HostIndexRouteImport
+      parentRoute: typeof HostRoute
+    }
     '/listing/$id': {
       id: '/listing/$id'
       path: '/listing/$id'
@@ -205,25 +333,92 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ListingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/host/verification': {
+      id: '/host/verification'
+      path: '/verification'
+      fullPath: '/host/verification'
+      preLoaderRoute: typeof HostVerificationRouteImport
+      parentRoute: typeof HostRoute
+    }
+    '/host/reviews': {
+      id: '/host/reviews'
+      path: '/reviews'
+      fullPath: '/host/reviews'
+      preLoaderRoute: typeof HostReviewsRouteImport
+      parentRoute: typeof HostRoute
+    }
+    '/host/properties': {
+      id: '/host/properties'
+      path: '/properties'
+      fullPath: '/host/properties'
+      preLoaderRoute: typeof HostPropertiesRouteImport
+      parentRoute: typeof HostRoute
+    }
     '/host/new': {
       id: '/host/new'
-      path: '/host/new'
+      path: '/new'
       fullPath: '/host/new'
       preLoaderRoute: typeof HostNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof HostRoute
+    }
+    '/host/messages': {
+      id: '/host/messages'
+      path: '/messages'
+      fullPath: '/host/messages'
+      preLoaderRoute: typeof HostMessagesRouteImport
+      parentRoute: typeof HostRoute
+    }
+    '/host/calendar': {
+      id: '/host/calendar'
+      path: '/calendar'
+      fullPath: '/host/calendar'
+      preLoaderRoute: typeof HostCalendarRouteImport
+      parentRoute: typeof HostRoute
+    }
+    '/host/bookings': {
+      id: '/host/bookings'
+      path: '/bookings'
+      fullPath: '/host/bookings'
+      preLoaderRoute: typeof HostBookingsRouteImport
+      parentRoute: typeof HostRoute
     }
   }
 }
 
+interface HostRouteChildren {
+  HostBookingsRoute: typeof HostBookingsRoute
+  HostCalendarRoute: typeof HostCalendarRoute
+  HostMessagesRoute: typeof HostMessagesRoute
+  HostNewRoute: typeof HostNewRoute
+  HostPropertiesRoute: typeof HostPropertiesRoute
+  HostReviewsRoute: typeof HostReviewsRoute
+  HostVerificationRoute: typeof HostVerificationRoute
+  HostIndexRoute: typeof HostIndexRoute
+}
+
+const HostRouteChildren: HostRouteChildren = {
+  HostBookingsRoute: HostBookingsRoute,
+  HostCalendarRoute: HostCalendarRoute,
+  HostMessagesRoute: HostMessagesRoute,
+  HostNewRoute: HostNewRoute,
+  HostPropertiesRoute: HostPropertiesRoute,
+  HostReviewsRoute: HostReviewsRoute,
+  HostVerificationRoute: HostVerificationRoute,
+  HostIndexRoute: HostIndexRoute,
+}
+
+const HostRouteWithChildren = HostRoute._addFileChildren(HostRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AccountRoute: AccountRoute,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   ExploreRoute: ExploreRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  GuestRoute: GuestRoute,
+  HostRoute: HostRouteWithChildren,
   ResetPasswordRoute: ResetPasswordRoute,
   VerifyEmailRoute: VerifyEmailRoute,
-  HostNewRoute: HostNewRoute,
   ListingIdRoute: ListingIdRoute,
 }
 export const routeTree = rootRouteImport

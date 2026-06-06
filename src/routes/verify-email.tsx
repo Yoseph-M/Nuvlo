@@ -76,7 +76,7 @@ function VerifyEmailPage() {
     try {
       const { error } = await authClient.sendVerificationEmail({
         email: resendEmail,
-        callbackURL: `${window.location.origin}/account`,
+        callbackURL: `${window.location.origin}/auth`,
       });
 
       if (!error) {

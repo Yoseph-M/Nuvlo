@@ -2,6 +2,9 @@ import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { MongoClient } from "mongodb";
 import { sendVerificationEmail, sendPasswordResetEmail } from "./utils/mailer.ts";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/nuvlo";
 const client = new MongoClient(mongoUri);

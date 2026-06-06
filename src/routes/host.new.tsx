@@ -30,7 +30,7 @@ function HostNew() {
       { opacity: 0, y: 30 },
       { opacity: 1, y: 0, duration: 0.9, ease: "slowReveal", stagger: 0.12, delay: 0.4 },
     );
-    const t = setTimeout(() => navigate({ to: "/account" }), 3200);
+    const t = setTimeout(() => navigate({ to: "/host" }), 3200);
     return () => clearTimeout(t);
   }, [done, navigate]);
 

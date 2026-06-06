@@ -11,6 +11,8 @@ import reviewRoutes from "./routes/review.ts";
 import messageRoutes from "./routes/message.ts";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth.ts";
+import adminRoutes from "./routes/adminRoutes.ts";
+import hostRoutes from "./routes/hostRoutes.ts";
 
 dotenv.config();
 
@@ -73,6 +75,8 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/host", hostRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

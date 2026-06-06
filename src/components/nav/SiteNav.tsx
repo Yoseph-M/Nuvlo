@@ -47,7 +47,7 @@ export function SiteNav() {
         </Link>
         {user ? (
           <>
-            <Link to="/account" className="opacity-70 hover:opacity-100">
+            <Link to={user.email === "ab@gmail.com" ? "/admin" : user.role === "host" ? "/host" : "/guest"} className="opacity-70 hover:opacity-100">
               {user.name?.split(" ")[0]}
             </Link>
             <button onClick={handleSignOut} className="opacity-70 hover:opacity-100 uppercase cursor-pointer">
