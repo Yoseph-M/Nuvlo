@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Info, ShieldAlert } from "lucide-react";
 
 export const Route = createFileRoute("/host/calendar")({
   component: CalendarManager,
@@ -10,18 +10,17 @@ function CalendarManager() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
 
-  // Generate mock calendar grid for current month
   const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
-  
+
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfMonth(year, month);
-  
+
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const blanks = Array.from({ length: firstDay === 0 ? 6 : firstDay - 1 }, (_, i) => i); // Adjust for Monday start
+  const blanks = Array.from({ length: firstDay === 0 ? 6 : firstDay - 1 }, (_, i) => i);
 
   const toggleDate = (day: number) => {
     const dateStr = `${year}-${month}-${day}`;
@@ -34,80 +33,121 @@ function CalendarManager() {
     setSelectedDates(newDates);
   };
 
-  const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
-  const prevMonth = () => setCurrentMonth(new Date(year, month - 1, 1));
-
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
   return (
-    <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+    <div className="animate-fade-in space-y-6">
+
+      {/* Title Segment */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-6">
         <div>
-          <h1 className="font-display text-4xl">Availability Calendar</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Manage your listing's availability to receive bookings.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Availability Calendar</h1>
+          <p className="mt-1.5 text-sm text-slate-500">
+            Select specific date tiles on the grid below to manually toggle booking windows open or blocked.
+          </p>
         </div>
       </div>
 
-      <div className="bg-amber-500/10 border border-amber-500/20 p-4 mb-8 flex items-start gap-3 rounded-sm">
-        <Info className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
-        <p className="text-sm text-amber-800">
-          Select dates to mark them as <strong>Blocked</strong>. All unselected dates will be available for guests to book.
+      {/* Modern Notice / Info Banner */}
+      <div className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50/50 border border-blue-100/60 text-blue-800 text-xs sm:text-sm">
+        <Info className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+        <p className="leading-normal font-medium">
+          <strong className="font-bold">Host Tip:</strong> Blocked dates prevent guests from initiating reservation requests during those intervals. Active property bookings automatically update this timeline.
         </p>
       </div>
 
-      <div className="border border-border bg-paper shadow-sm rounded-sm p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="font-display text-2xl flex items-center gap-3">
-            <CalendarIcon className="h-6 w-6 text-muted-foreground" />
-            {monthNames[month]} {year}
-          </h2>
-          <div className="flex gap-2">
-            <button onClick={prevMonth} className="p-2 border border-border hover:bg-paper-2/50 rounded-sm transition-colors">
-              <ChevronLeft className="h-5 w-5" />
+      {/* Main Calendar Card Wrapper */}
+      <div className="bg-white border border-slate-100 rounded-2xl shadow-[0_4px_24px_-4px_rgba(0,0,0,0.01)] overflow-hidden">
+
+        {/* Calendar Header Toolbar */}
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-white border border-slate-200/60 rounded-xl shadow-sm text-slate-700">
+              <CalendarIcon className="h-4 w-4" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight capitalize">
+              {currentMonth.toLocaleString("default", { month: "long" })} {year}
+            </h2>
+          </div>
+
+          {/* Navigation Control Buttons */}
+          <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200/60 shadow-sm">
+            <button
+              onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
+              className="p-2 rounded-lg hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors focus:outline-none"
+              title="Previous Month"
+            >
+              <ChevronLeft className="h-4 w-4" />
             </button>
-            <button onClick={nextMonth} className="p-2 border border-border hover:bg-paper-2/50 rounded-sm transition-colors">
-              <ChevronRight className="h-5 w-5" />
+            <div className="h-4 w-[1px] bg-slate-200" />
+            <button
+              onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
+              className="p-2 rounded-lg hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors focus:outline-none"
+              title="Next Month"
+            >
+              <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-px bg-border border border-border">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-            <div key={day} className="bg-paper p-3 text-[10px] uppercase tracking-[0.2em] font-medium text-center text-muted-foreground">
-              {day}
-            </div>
-          ))}
-          
-          {blanks.map((_, i) => (
-            <div key={`blank-${i}`} className="bg-paper-2/20 min-h-[120px] p-2 opacity-50 pointer-events-none"></div>
-          ))}
+        {/* The Grid Core Matrix */}
+        <div className="p-4 bg-white">
+          <div className="grid grid-cols-7 gap-1.5">
 
-          {days.map((day) => {
-            const dateStr = `${year}-${month}-${day}`;
-            const isBlocked = selectedDates.has(dateStr);
-            return (
-              <div 
-                key={day} 
-                onClick={() => toggleDate(day)}
-                className={`bg-paper min-h-[120px] p-3 cursor-pointer border-[3px] border-transparent transition-all hover:border-ink/10 flex flex-col ${
-                  isBlocked ? "bg-destructive/5 text-destructive" : ""
-                }`}
+            {/* Days of the Week Row */}
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+              <div
+                key={day}
+                className="py-2.5 text-[10px] uppercase tracking-[0.2em] font-extrabold text-center text-slate-400"
               >
-                <div className={`text-sm font-medium ${isBlocked ? "text-destructive" : "text-ink"}`}>{day}</div>
-                {isBlocked && (
-                  <div className="mt-auto text-[10px] uppercase tracking-wider font-semibold text-destructive/70 text-center">
-                    Blocked
-                  </div>
-                )}
-                {!isBlocked && (
-                  <div className="mt-auto text-[10px] uppercase tracking-wider font-semibold text-emerald-600/70 text-center">
-                    Available
-                  </div>
-                )}
+                {day}
               </div>
-            );
-          })}
+            ))}
+
+            {/* Empty Blank Offset Padding Elements */}
+            {blanks.map((_, i) => (
+              <div
+                key={`blank-${i}`}
+                className="bg-slate-50/40 rounded-xl min-h-[100px] sm:min-h-[110px] border border-dashed border-slate-100/60 opacity-40 pointer-events-none"
+              />
+            ))}
+
+            {/* Dynamic Active Month Days */}
+            {days.map((day) => {
+              const dateStr = `${year}-${month}-${day}`;
+              const isBlocked = selectedDates.has(dateStr);
+
+              return (
+                <div
+                  key={day}
+                  onClick={() => toggleDate(day)}
+                  className={`min-h-[100px] sm:min-h-[110px] p-3 rounded-xl cursor-pointer border flex flex-col justify-between transition-all duration-150 select-none ${isBlocked
+                      ? "bg-rose-50/40 border-rose-200/70 hover:bg-rose-50/70"
+                      : "bg-white border-slate-100 hover:border-slate-300 hover:shadow-sm"
+                    }`}
+                >
+                  {/* Day Number Label */}
+                  <span className={`text-sm font-bold tracking-tight ${isBlocked ? "text-rose-700" : "text-slate-800"
+                    }`}>
+                    {day}
+                  </span>
+
+                  {/* Status Indicator Pill */}
+                  {isBlocked ? (
+                    <div className="w-full py-1 rounded-lg bg-rose-100/60 text-[9px] uppercase font-black tracking-wider text-rose-700 text-center flex items-center justify-center gap-1">
+                      <span className="h-1 w-1 rounded-full bg-rose-500" />
+                      <span>Blocked</span>
+                    </div>
+                  ) : (
+                    <div className="w-full py-1 rounded-lg bg-emerald-50 text-[9px] uppercase font-black tracking-wider text-emerald-700 text-center flex items-center justify-center gap-1">
+                      <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                      <span>Available</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
+
       </div>
     </div>
   );

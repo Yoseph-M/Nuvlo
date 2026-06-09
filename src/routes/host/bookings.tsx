@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Check, X, Calendar, User, Clock } from "lucide-react";
-import { MagneticButton } from "../../components/ui/MagneticButton";
+import { Check, X, Calendar, User, Clock, ShieldInfo } from "lucide-react";
 
 export const Route = createFileRoute("/host/bookings")({
   component: BookingsManager,
@@ -21,139 +20,145 @@ interface Booking {
 
 function BookingsManager() {
   const [activeTab, setActiveTab] = useState<BookingStatus>("pending");
-
-  // Mock data for requests
   const [bookings, setBookings] = useState<Booking[]>([
-    {
-      id: "b1",
-      guestName: "Alice Wonderland",
-      propertyTitle: "Luxury Villa in Bole",
-      dates: "Oct 15 - Oct 20, 2026",
-      price: 750,
-      status: "pending",
-      avatar: "A"
-    },
-    {
-      id: "b2",
-      guestName: "John Doe",
-      propertyTitle: "Downtown Apartment",
-      dates: "Nov 1 - Nov 5, 2026",
-      price: 600,
-      status: "pending",
-      avatar: "J"
-    },
-    {
-      id: "b3",
-      guestName: "Sarah Smith",
-      propertyTitle: "Luxury Villa in Bole",
-      dates: "Sep 10 - Sep 14, 2026",
-      price: 600,
-      status: "confirmed",
-      avatar: "S"
-    }
+    { id: "b1", guestName: "Alice Wonderland", propertyTitle: "Luxury Villa in Bole", dates: "Oct 15 - Oct 20, 2026", price: 750, status: "pending", avatar: "A" },
+    { id: "b2", guestName: "John Doe", propertyTitle: "Downtown Apartment", dates: "Nov 1 - Nov 5, 2026", price: 600, status: "pending", avatar: "J" },
   ]);
 
-  const handleStatusUpdate = async (id: string, newStatus: BookingStatus) => {
-    // Optimistic UI update
+  const handleStatusUpdate = (id: string, newStatus: BookingStatus) => {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
-
-    try {
-      await fetch(`http://localhost:5001/api/host/bookings/${id}/status`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus })
-      });
-    } catch (err) {
-      console.error(err);
-      // Revert if API fails
-    }
   };
 
   const filteredBookings = bookings.filter(b => b.status === activeTab);
 
+  // Quick helper to determine tab styling variables dynamically
+  const getTabBadgeColor = (tab: BookingStatus) => {
+    if (tab === "pending") return "bg-amber-50 text-amber-700 border-amber-200/60";
+    if (tab === "confirmed") return "bg-emerald-50 text-emerald-700 border-emerald-200/60";
+    return "bg-slate-100 text-slate-600 border-slate-200";
+  };
+
   return (
-    <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-8">
+    <div className="animate-fade-in space-y-8">
+
+      {/* Title Segment */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-6">
         <div>
-          <h1 className="font-display text-4xl">Booking Requests</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Manage incoming stays and reservation statuses.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Booking Requests</h1>
+          <p className="mt-1.5 text-sm text-slate-500">
+            Manage your custom tenant reservation validation inquiries, scheduling status logs, and updates.
+          </p>
+        </div>
+
+        {/* Count overview banner strip */}
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2.5 w-fit">
+          <Clock className="h-3.5 w-3.5 text-slate-400" />
+          <span>Action Required: {bookings.filter(b => b.status === "pending").length} Pending</span>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-border mb-8">
-        {(["pending", "confirmed", "cancelled"] as BookingStatus[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-8 py-4 text-[10px] uppercase tracking-[0.2em] font-medium transition-colors border-b-2 relative top-[1px] ${
-              activeTab === tab 
-                ? "border-ink text-ink" 
-                : "border-transparent text-muted-foreground hover:text-ink"
-            }`}
-          >
-            {tab}
-            {tab === "pending" && bookings.filter(b => b.status === "pending").length > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center bg-ink text-paper text-[9px] rounded-full h-4 w-4">
-                {bookings.filter(b => b.status === "pending").length}
+      {/* Premium Pill Tabs Segment */}
+      <div className="bg-slate-100/80 p-1.5 rounded-2xl w-fit flex items-center gap-1.5 border border-slate-200/40">
+        {(["pending", "confirmed", "cancelled"] as BookingStatus[]).map((tab) => {
+          const isActive = activeTab === tab;
+          const count = bookings.filter(b => b.status === tab).length;
+
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold tracking-wide uppercase transition-all duration-200 focus:outline-none ${isActive
+                ? "bg-white text-slate-950 shadow-sm border border-slate-200/60 scale-[1.01]"
+                : "text-slate-500 hover:text-slate-800 hover:bg-white/40"
+                }`}
+            >
+              <span>{tab}</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-md border font-extrabold ${isActive ? getTabBadgeColor(tab) : "bg-slate-200/70 text-slate-600 border-transparent"
+                }`}>
+                {count}
               </span>
-            )}
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Booking List */}
+      {/* Dynamic Bookings Content List */}
       <div className="space-y-4">
         {filteredBookings.length === 0 ? (
-          <div className="p-12 border border-border text-center bg-paper shadow-sm">
-            <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <p className="text-sm text-muted-foreground">No {activeTab} bookings found.</p>
+          <div className="border border-dashed border-slate-200 rounded-2xl p-16 text-center bg-slate-50/50 flex flex-col items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center shadow-sm mb-4">
+              <Clock className="h-5 w-5 text-slate-400" />
+            </div>
+            <h3 className="font-semibold text-slate-900 text-base">No requests inside archive</h3>
+            <p className="text-sm text-slate-400 max-w-sm mt-1">
+              There are currently no {activeTab} reservation records to manage inside this filter window.
+            </p>
           </div>
         ) : (
           filteredBookings.map((booking) => (
-            <div key={booking.id} className="p-6 border border-border bg-paper shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all hover:border-ink/20">
+            <div
+              key={booking.id}
+              className="p-5 sm:p-6 rounded-2xl border border-slate-100 bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.02)] transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-6"
+            >
+              {/* Left Column: Guest Identity and Property Information */}
               <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-full bg-paper-2 border border-border flex items-center justify-center flex-shrink-0">
-                  <span className="font-display text-lg text-ink/70">{booking.avatar}</span>
+                {/* User Monogram Circle Badge */}
+                <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200/60 flex items-center justify-center font-bold text-sm text-slate-700 border border-slate-200/50 shrink-0">
+                  {booking.avatar}
                 </div>
-                <div>
-                  <h3 className="font-medium text-lg flex items-center gap-2">
-                    {booking.guestName}
-                    {booking.status === "pending" && (
-                      <span className="inline-block px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[9px] uppercase tracking-wider font-semibold border border-amber-500/20">
-                        Pending
-                      </span>
-                    )}
-                    {booking.status === "confirmed" && (
-                      <span className="inline-block px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 text-[9px] uppercase tracking-wider font-semibold border border-emerald-500/20">
-                        Confirmed
-                      </span>
-                    )}
+
+                <div className="space-y-1">
+                  <h3 className="font-bold text-slate-900 tracking-tight text-lg leading-snug">
+                    {booking.propertyTitle}
                   </h3>
-                  <div className="text-sm text-muted-foreground mt-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                    <span className="flex items-center gap-1"><Home className="h-3 w-3" /> {booking.propertyTitle}</span>
-                    <span className="hidden sm:inline text-border">•</span>
-                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {booking.dates}</span>
+
+                  {/* Metadata labels row */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-500 text-xs font-medium pt-0.5">
+                    <span className="flex items-center gap-1.5 text-slate-700 font-semibold">
+                      <User className="h-3.5 w-3.5 text-slate-400 font-normal" />
+                      {booking.guestName}
+                    </span>
+                    <span className="text-slate-200 hidden sm:inline">•</span>
+                    <span className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md text-slate-600 font-semibold">
+                      <Calendar className="h-3.5 w-3.5 text-slate-400 font-normal" />
+                      {booking.dates}
+                    </span>
                   </div>
                 </div>
               </div>
-              
-              <div className="flex flex-col md:items-end gap-4 border-t border-border pt-4 md:border-0 md:pt-0">
-                <div className="font-display text-2xl">${booking.price}</div>
-                {booking.status === "pending" && (
-                  <div className="flex gap-2">
-                    <button 
+
+              {/* Right Column: Pricing details and contextual status actions */}
+              <div className="flex items-center justify-between md:justify-end gap-6 md:flex-col md:items-end pt-4 border-t border-slate-100 md:border-t-0 md:pt-0 shrink-0">
+                <div className="text-left md:text-right">
+                  <span className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 block mb-0.5">Total payout</span>
+                  <div className="text-2xl font-black text-slate-900 tracking-tight">
+                    ${booking.price}
+                  </div>
+                </div>
+
+                {/* Interactive State Actions Panel */}
+                {booking.status === "pending" ? (
+                  <div className="flex items-center gap-2">
+                    <button
                       onClick={() => handleStatusUpdate(booking.id, "cancelled")}
-                      className="flex items-center justify-center px-4 py-2 text-xs font-medium text-destructive bg-destructive/5 hover:bg-destructive/10 border border-destructive/20 transition-colors"
+                      className="flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-100/80 transition-all duration-150 focus:outline-none"
                     >
-                      <X className="h-4 w-4 mr-1" /> Reject
+                      <X className="h-3.5 w-3.5 mr-1" /> Reject
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleStatusUpdate(booking.id, "confirmed")}
-                      className="flex items-center justify-center px-4 py-2 text-xs font-medium text-emerald-700 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-colors"
+                      className="flex items-center justify-center px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-white bg-slate-950 hover:bg-slate-800 border border-slate-950 shadow-sm transition-all duration-150 focus:outline-none"
                     >
-                      <Check className="h-4 w-4 mr-1" /> Accept
+                      <Check className="h-3.5 w-3.5 mr-1 text-emerald-400" /> Accept
                     </button>
+                  </div>
+                ) : (
+                  /* Read-only historical pill badge state */
+                  <div className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest border ${booking.status === "confirmed"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                    : "bg-slate-50 text-slate-400 border-slate-200/60"
+                    }`}>
+                    {booking.status === "confirmed" ? "✓ Confirmed" : "✕ Cancelled"}
                   </div>
                 )}
               </div>

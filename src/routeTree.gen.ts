@@ -18,12 +18,11 @@ import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as HostIndexRouteImport } from './routes/host.index'
+import { Route as HostIndexRouteImport } from './routes/host/index'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
 import { Route as HostVerificationRouteImport } from './routes/host/verification'
 import { Route as HostReviewsRouteImport } from './routes/host/reviews'
 import { Route as HostPropertiesRouteImport } from './routes/host/properties'
-import { Route as HostNewRouteImport } from './routes/host.new'
 import { Route as HostMessagesRouteImport } from './routes/host/messages'
 import { Route as HostCalendarRouteImport } from './routes/host/calendar'
 import { Route as HostBookingsRouteImport } from './routes/host/bookings'
@@ -98,11 +97,6 @@ const HostPropertiesRoute = HostPropertiesRouteImport.update({
   path: '/properties',
   getParentRoute: () => HostRoute,
 } as any)
-const HostNewRoute = HostNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => HostRoute,
-} as any)
 const HostMessagesRoute = HostMessagesRouteImport.update({
   id: '/messages',
   path: '/messages',
@@ -132,7 +126,6 @@ export interface FileRoutesByFullPath {
   '/host/bookings': typeof HostBookingsRoute
   '/host/calendar': typeof HostCalendarRoute
   '/host/messages': typeof HostMessagesRoute
-  '/host/new': typeof HostNewRoute
   '/host/properties': typeof HostPropertiesRoute
   '/host/reviews': typeof HostReviewsRoute
   '/host/verification': typeof HostVerificationRoute
@@ -151,7 +144,6 @@ export interface FileRoutesByTo {
   '/host/bookings': typeof HostBookingsRoute
   '/host/calendar': typeof HostCalendarRoute
   '/host/messages': typeof HostMessagesRoute
-  '/host/new': typeof HostNewRoute
   '/host/properties': typeof HostPropertiesRoute
   '/host/reviews': typeof HostReviewsRoute
   '/host/verification': typeof HostVerificationRoute
@@ -172,7 +164,6 @@ export interface FileRoutesById {
   '/host/bookings': typeof HostBookingsRoute
   '/host/calendar': typeof HostCalendarRoute
   '/host/messages': typeof HostMessagesRoute
-  '/host/new': typeof HostNewRoute
   '/host/properties': typeof HostPropertiesRoute
   '/host/reviews': typeof HostReviewsRoute
   '/host/verification': typeof HostVerificationRoute
@@ -194,7 +185,6 @@ export interface FileRouteTypes {
     | '/host/bookings'
     | '/host/calendar'
     | '/host/messages'
-    | '/host/new'
     | '/host/properties'
     | '/host/reviews'
     | '/host/verification'
@@ -213,7 +203,6 @@ export interface FileRouteTypes {
     | '/host/bookings'
     | '/host/calendar'
     | '/host/messages'
-    | '/host/new'
     | '/host/properties'
     | '/host/reviews'
     | '/host/verification'
@@ -233,7 +222,6 @@ export interface FileRouteTypes {
     | '/host/bookings'
     | '/host/calendar'
     | '/host/messages'
-    | '/host/new'
     | '/host/properties'
     | '/host/reviews'
     | '/host/verification'
@@ -354,13 +342,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HostPropertiesRouteImport
       parentRoute: typeof HostRoute
     }
-    '/host/new': {
-      id: '/host/new'
-      path: '/new'
-      fullPath: '/host/new'
-      preLoaderRoute: typeof HostNewRouteImport
-      parentRoute: typeof HostRoute
-    }
     '/host/messages': {
       id: '/host/messages'
       path: '/messages'
@@ -389,7 +370,6 @@ interface HostRouteChildren {
   HostBookingsRoute: typeof HostBookingsRoute
   HostCalendarRoute: typeof HostCalendarRoute
   HostMessagesRoute: typeof HostMessagesRoute
-  HostNewRoute: typeof HostNewRoute
   HostPropertiesRoute: typeof HostPropertiesRoute
   HostReviewsRoute: typeof HostReviewsRoute
   HostVerificationRoute: typeof HostVerificationRoute
@@ -400,7 +380,6 @@ const HostRouteChildren: HostRouteChildren = {
   HostBookingsRoute: HostBookingsRoute,
   HostCalendarRoute: HostCalendarRoute,
   HostMessagesRoute: HostMessagesRoute,
-  HostNewRoute: HostNewRoute,
   HostPropertiesRoute: HostPropertiesRoute,
   HostReviewsRoute: HostReviewsRoute,
   HostVerificationRoute: HostVerificationRoute,

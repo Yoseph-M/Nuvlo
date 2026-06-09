@@ -23,11 +23,11 @@ export const Route = createFileRoute("/")({
 
 const REGIONS = [
   { name: "Addis Ababa", note: "Capital · cafés, culture, coffee" },
-  { name: "Lalibela",    note: "Rock-hewn churches · pilgrim trails" },
-  { name: "Gondar",      note: "Castles of Fasil Ghebbi" },
-  { name: "Bahir Dar",   note: "Lake Tana · Blue Nile Falls" },
-  { name: "Harar",       note: "Walled city · UNESCO heritage" },
-  { name: "Simien",      note: "High mountains · gelada country" },
+  { name: "Lalibela", note: "Rock-hewn churches · pilgrim trails" },
+  { name: "Gondar", note: "Castles of Fasil Ghebbi" },
+  { name: "Bahir Dar", note: "Lake Tana · Blue Nile Falls" },
+  { name: "Harar", note: "Walled city · UNESCO heritage" },
+  { name: "Simien", note: "High mountains · gelada country" },
 ];
 
 function Landing() {

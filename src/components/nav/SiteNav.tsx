@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { authClient } from "../../lib/auth-client.ts";
 
 export function SiteNav() {
@@ -7,15 +7,25 @@ export function SiteNav() {
   const user = session?.user;
   const [scrolled, setScrolled] = useState(false);
 
+  // Get the current URL path location
+  const location = useLocation();
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // If the user is currently inside any host panel page, hide this navigation bar completely
+  if (location.pathname.startsWith("/host")) {
+    return null;
+  }
+
   const handleSignOut = async () => {
     await authClient.signOut();
   };
+
+  const castedUser = user as { name?: string; email?: string; role?: string } | undefined;
 
   return (
     <header
@@ -42,15 +52,19 @@ export function SiteNav() {
         <Link to="/explore" className="opacity-70 hover:opacity-100">
           Explore
         </Link>
-        <Link to="/host/new" className="opacity-70 hover:opacity-100">
+        {/* Point safely to /host dashboard directly now that /host/new is deleted */}
+        <Link to="/host" className="opacity-70 hover:opacity-100">
           Host
         </Link>
-        {user ? (
+        {castedUser ? (
           <>
-            <Link to={user.email === "ab@gmail.com" ? "/admin" : user.role === "host" ? "/host" : "/guest"} className="opacity-70 hover:opacity-100">
-              {user.name?.split(" ")[0]}
+            <Link
+              to={castedUser.email === "ab@gmail.com" ? "/admin" : castedUser.role === "host" ? "/host" : "/guest"}
+              className="opacity-70 hover:opacity-100"
+            >
+              {castedUser.name?.split(" ")[0]}
             </Link>
-            <button onClick={handleSignOut} className="opacity-70 hover:opacity-100 uppercase cursor-pointer">
+            <button onClick={handleSignOut} className="opacity-70 hover:opacity-100 uppercase cursor-pointer bg-transparent border-none outline-none">
               Sign out
             </button>
           </>
