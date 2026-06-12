@@ -1,6 +1,15 @@
 import { Request, Response, NextFunction } from "express";
-import { fromNodeHeaders } from "better-auth/node";
-import { auth } from "../auth.ts";
+import { verifyAccessToken } from "../utils/token.ts";
+import { User } from "../models/User.ts";
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: Record<string, any>;
+      session?: Record<string, any>;
+    }
+  }
+}
 
 export const protect = async (
   req: Request,
@@ -8,17 +17,37 @@ export const protect = async (
   next: NextFunction
 ) => {
   try {
-    const session = await auth.api.getSession({
-      headers: fromNodeHeaders(req.headers),
-    });
+    let token: string | null = null;
 
-    if (!session || !session.user) {
-      return res.status(401).json({ message: "Not authorized, no session found" });
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
-    // Attach user and session to request object
-    req.user = session.user;
-    (req as any).session = session.session;
+    if (!token) {
+      return res.status(401).json({ message: "Not authorized, no token found" });
+    }
+
+    const decoded = verifyAccessToken(token);
+    if (!decoded) {
+      return res.status(401).json({ message: "Not authorized, token expired or invalid" });
+    }
+
+    const dbUser = await User.findById(decoded.userId);
+    if (!dbUser) {
+      return res.status(401).json({ message: "Not authorized, user not found" });
+    }
+
+    const userObj = dbUser.toObject();
+    // Attach user and session to request object with mapped fields for compatibility
+    req.user = {
+      ...userObj,
+      id: userObj._id.toString(),
+      emailVerified: userObj.isVerified,
+    };
+    req.session = { userId: userObj._id.toString() };
 
     next();
   } catch (error: any) {
