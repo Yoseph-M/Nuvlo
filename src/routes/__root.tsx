@@ -50,6 +50,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Bet · ቤት — Considered stays across Ethiopia" },
+      { name: "theme-color", content: "#f5efe6" },
       { name: "description", content: "Hand-edited short-term homes across Addis Ababa, Lalibela, Gondar, Bahir Dar, Axum, Harar and the Simien — booked in Birr, hosted by Ethiopians." },
       { name: "author", content: "Bet" },
       { property: "og:title", content: "Bet · ቤት — Considered stays across Ethiopia" },
@@ -63,7 +64,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap",
       },
     ],
   }),
@@ -90,10 +91,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isDashboard = pathname.startsWith("/host/dashboard");
+  const hideNav =
+    pathname.startsWith("/host/dashboard") ||
+    ["/auth", "/forgot-password", "/reset-password", "/verify-email"].includes(pathname);
   return (
     <QueryClientProvider client={queryClient}>
-      {!isDashboard && <SiteNav />}
+      {!hideNav && <SiteNav />}
       <RouteTransition>
         <Outlet />
       </RouteTransition>

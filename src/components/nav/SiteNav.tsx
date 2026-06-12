@@ -1,23 +1,46 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { authClient } from "../../lib/auth-client.ts";
+import { Sun, Moon } from "lucide-react";
+import { cn } from "../../lib/utils";
 
 export function SiteNav() {
   const { data: session } = authClient.useSession();
   const user = session?.user;
   const [scrolled, setScrolled] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("theme");
+      if (saved === "light" || saved === "dark") return saved;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    return "light";
+  });
 
   // Get the current URL path location
   const location = useLocation();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // If the user is currently inside any host panel page, hide this navigation bar completely
-  if (location.pathname.startsWith("/host")) {
+  useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  // Hide this navigation bar on host panel pages and auth-related pages
+  const hiddenPaths = ["/auth", "/forgot-password", "/reset-password", "/verify-email"];
+  if (location.pathname.startsWith("/host") || hiddenPaths.includes(location.pathname)) {
     return null;
   }
 
@@ -29,16 +52,12 @@ export function SiteNav() {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-8 py-5"
-      style={{
-        backgroundColor: scrolled ? "rgba(255, 255, 255, 0.65)" : "transparent",
-        backdropFilter: scrolled ? "blur(14px) saturate(180%)" : "none",
-        WebkitBackdropFilter: scrolled ? "blur(14px) saturate(180%)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(255,255,255,0.3)" : "1px solid transparent",
-        color: scrolled ? "#111" : "#000000ff",
-        transition:
-          "background-color 0.35s ease, backdrop-filter 0.35s ease, border-color 0.35s ease, color 0.35s ease",
-      }}
+      className={cn(
+        "fixed inset-x-0 top-0 z-40 flex items-center justify-between px-8 transition-all duration-500",
+        scrolled
+          ? "bg-paper/85 dark:bg-paper/75 backdrop-blur-md border-b border-border/10 py-4 shadow-sm text-ink"
+          : "mix-blend-difference text-paper py-6"
+      )}
     >
       <Link to="/" className="flex items-baseline gap-2 font-display text-2xl tracking-tight">
         <span>Bet</span>
@@ -52,7 +71,6 @@ export function SiteNav() {
         <Link to="/explore" className="opacity-70 hover:opacity-100">
           Explore
         </Link>
-        {/* Point safely to /host dashboard directly now that /host/new is deleted */}
         <Link to="/host" className="opacity-70 hover:opacity-100">
           Host
         </Link>
@@ -73,6 +91,17 @@ export function SiteNav() {
             Sign in
           </Link>
         )}
+        <button
+          onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          className="flex h-7 w-7 items-center justify-center rounded-full border border-border/20 text-current hover:border-current/40 transition-colors cursor-pointer"
+          aria-label="Toggle theme"
+        >
+          {theme === "dark" ? (
+            <Sun className="h-3.5 w-3.5" />
+          ) : (
+            <Moon className="h-3.5 w-3.5" />
+          )}
+        </button>
       </nav>
     </header>
   );
