@@ -61,11 +61,9 @@ const BookingSchema = new Schema<IBooking>(
 );
 
 // Validate that check-out is after check-in
-BookingSchema.pre("validate", function (next) {
+BookingSchema.pre("validate", function () {
   if (this.checkOut <= this.checkIn) {
-    next(new Error("Check-out must be after check-in."));
-  } else {
-    next();
+    throw new Error("Check-out must be after check-in.");
   }
 });
 

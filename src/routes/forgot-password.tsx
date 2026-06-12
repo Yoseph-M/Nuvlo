@@ -54,7 +54,7 @@ function ForgotPasswordPage() {
     setLoading(true);
     try {
       // Better Auth forgetPassword API
-      const { error: authError } = await authClient.forgetPassword({
+      const { error: authError } = await authClient.resetPassword({
         email,
         redirectTo: `${window.location.origin}/reset-password`,
       });

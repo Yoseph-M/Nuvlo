@@ -9,6 +9,8 @@ dotenv.config();
 const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/nuvlo";
 const client = new MongoClient(mongoUri);
 const db = client.db();
+const sevenDaysInSeconds = 60 * 60 * 24 * 7;
+const oneDayInSeconds = 60 * 60 * 24;
 
 export const auth = betterAuth({
   basePath: "/api/auth",
@@ -22,6 +24,21 @@ export const auth = betterAuth({
     "http://127.0.0.1:8080",
   ],
   database: mongodbAdapter(db, { client }),
+  session: {
+    expiresIn: sevenDaysInSeconds,
+    updateAge: oneDayInSeconds,
+    disableSessionRefresh: false,
+  },
+  advanced: {
+    defaultCookieAttributes: {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+    },
+    useSecureCookies:
+      process.env.NODE_ENV === "production" ||
+      (process.env.BETTER_AUTH_URL || "").startsWith("https://"),
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,

@@ -34,7 +34,7 @@ export function ListingCard({ listing, index = 0 }: { listing: Listing; index?: 
     >
       <div
         ref={containerRef}
-        className="relative overflow-hidden bg-paper-2"
+        className="relative overflow-hidden bg-paper-2 rounded-sm border border-border/10 transition-all duration-500 group-hover:border-ink/20 group-hover:shadow-lg"
         style={{ aspectRatio: "4 / 5" }}
       >
         <div
@@ -65,7 +65,7 @@ export function ListingCard({ listing, index = 0 }: { listing: Listing; index?: 
 
       <div className="mt-4 flex items-start justify-between gap-4">
         <div>
-          <h3 className="font-display text-xl leading-tight">{listing.title}</h3>
+          <h3 className="font-display text-xl leading-tight transition-colors group-hover:text-accent duration-300">{listing.title}</h3>
           <p className="mt-1 text-xs text-muted-foreground">
             {listing.propertyType} · {listing.bedrooms} bed · up to {listing.maxGuests} guests
           </p>

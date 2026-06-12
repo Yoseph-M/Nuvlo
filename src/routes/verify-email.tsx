@@ -7,9 +7,12 @@ import { MagneticButton } from "../components/ui/MagneticButton";
 import { Check, X, Loader2, Mail, AlertCircle, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { authClient } from "../lib/auth-client.ts";
+import { auth } from "../lib/firebase.ts";
+import { applyActionCode } from "firebase/auth";
 
 const searchSchema = z.object({
   token: z.string().optional(),
+  oobCode: z.string().optional(),
 });
 
 export const Route = createFileRoute("/verify-email")({
@@ -18,7 +21,7 @@ export const Route = createFileRoute("/verify-email")({
 });
 
 function VerifyEmailPage() {
-  const { token } = Route.useSearch();
+  const { token, oobCode } = Route.useSearch();
   const [status, setStatus] = useState<"loading" | "success" | "error" | "no-token">("loading");
   const [message, setMessage] = useState("");
   const [resendEmail, setResendEmail] = useState("");
@@ -37,33 +40,26 @@ function VerifyEmailPage() {
   }, [status]);
 
   useEffect(() => {
-    if (!token) {
+    const code = oobCode || token;
+    if (!code) {
       setStatus("no-token");
       return;
     }
 
     const verify = async () => {
       try {
-        const { error } = await authClient.verifyEmail({
-          query: { token }
-        });
-        
-        if (!error) {
-          setStatus("success");
-          setMessage("Your email has been verified successfully!");
-        } else {
-          setStatus("error");
-          setMessage(error.message || "Invalid or expired verification token.");
-        }
-      } catch (err) {
+        await applyActionCode(auth, code);
+        setStatus("success");
+        setMessage("Your email has been verified successfully!");
+      } catch (err: any) {
         console.error("Verification connection error:", err);
         setStatus("error");
-        setMessage("Connection failed. Failed to reach verification server.");
+        setMessage(err.message || "Invalid or expired verification token.");
       }
     };
 
     verify();
-  }, [token]);
+  }, [token, oobCode]);
 
   const handleResend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,7 +79,7 @@ function VerifyEmailPage() {
         toast.success("Verification link sent to your inbox!");
         setResendEmail("");
       } else {
-        toast.error(error.message || "Failed to resend verification link.");
+        toast.error(error.message || "Failed to resend verification link. Make sure you are signed in first.");
       }
     } catch (err) {
       console.error(err);

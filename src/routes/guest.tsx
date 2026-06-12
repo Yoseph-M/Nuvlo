@@ -33,7 +33,7 @@ function GuestDashboard() {
         <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Guest Dashboard</p>
         <h1 className="mt-3 font-display text-6xl">Bonjour, {user.name?.split(" ")[0]}.</h1>
         <p className="mt-4 text-sm text-muted-foreground">
-          You're signed in as a {user.role || "guest"}. {user.email}
+          You're signed in as a {(user as any).role || "guest"}. {user.email}
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-2">

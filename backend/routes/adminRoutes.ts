@@ -1,5 +1,5 @@
 import express from "express";
-import { auth } from "../auth.ts";
+import { protect } from "../middleware/authMiddleware.ts";
 import SystemSettings from "../models/SystemSettings.ts";
 import mongoose from "mongoose";
 
@@ -7,18 +7,14 @@ const router = express.Router();
 
 // Middleware to check if user is the authorized admin (ab@gmail.com)
 const requireAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  try {
-    const session = await auth.api.getSession({ headers: req.headers });
-    if (!session || !session.user || session.user.email !== "ab@gmail.com") {
-      return res.status(403).json({ message: "Forbidden: Admin access required." });
-    }
+  if (req.user && req.user.email === "ab@gmail.com") {
     next();
-  } catch (err) {
-    console.error("Admin auth error:", err);
-    return res.status(500).json({ message: "Internal server error during authentication" });
+  } else {
+    return res.status(403).json({ message: "Forbidden: Admin access required." });
   }
 };
 
+router.use(protect);
 router.use(requireAdmin);
 
 // Get current system settings

@@ -1,11 +1,29 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { listings } from "../lib/mock/listings";
+import { createFileRoute, Link, Navigate, useNavigate } from "@tanstack/react-router";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { listings, ALL_REGIONS, type Region } from "../lib/mock/listings";
 import { ListingGrid } from "../components/listing/ListingGrid";
 import { MagneticButton } from "../components/ui/MagneticButton";
 import { StaggerReveal } from "../components/reveal/StaggerReveal";
 import { useGsapContext } from "../lib/gsap/useGsapContext";
+import { authClient } from "../lib/auth-client";
+import { getAuthenticatedRedirectPath } from "../lib/auth-routing";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  Search,
+  MapPin,
+  Calendar,
+  Users,
+  Waves,
+  Mountain,
+  Castle,
+  TreePine,
+  Droplets,
+  Snowflake,
+  Wheat,
+  Home,
+  Star,
+} from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,6 +39,18 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
+const CATEGORIES = [
+  { label: "All stays", icon: Home },
+  { label: "Lakefront", icon: Waves },
+  { label: "Highland", icon: Mountain },
+  { label: "Heritage", icon: Castle },
+  { label: "Forest", icon: TreePine },
+  { label: "Pools", icon: Droplets },
+  { label: "Arctic", icon: Snowflake },
+  { label: "Farms", icon: Wheat },
+  { label: "Top rated", icon: Star },
+];
+
 const REGIONS = [
   { name: "Addis Ababa", note: "Capital · cafés, culture, coffee" },
   { name: "Lalibela", note: "Rock-hewn churches · pilgrim trails" },
@@ -31,7 +61,30 @@ const REGIONS = [
 ];
 
 function Landing() {
+  const navigate = useNavigate();
+  const { data: session, isPending: isSessionPending } = authClient.useSession();
+  const authenticatedRedirectPath = getAuthenticatedRedirectPath(session?.user);
+  const [activeCategory, setActiveCategory] = useState(0);
+  const [destination, setDestination] = useState("");
   const featured = listings.slice(0, 6);
+
+  // Scroll-reveal via IntersectionObserver
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -60px 0px" }
+    );
+    const reveals = document.querySelectorAll(".reveal-fade-up");
+    reveals.forEach((el) => observerRef.current?.observe(el));
+    return () => observerRef.current?.disconnect();
+  }, []);
 
   const heroRef = useGsapContext<HTMLElement>((ctx) => {
     const words = ctx.selector!(".hero-word") as Element[];
@@ -45,6 +98,7 @@ function Landing() {
       delay: 0.35,
     });
 
+    // Parallax background at 60% scroll speed
     const img = ctx.selector!(".hero-image")[0] as HTMLElement;
     if (img) {
       gsap.to(img, {
@@ -58,8 +112,35 @@ function Landing() {
         },
       });
     }
+
+    // Animate search card
+    const card = ctx.selector!(".search-card")[0] as HTMLElement;
+    if (card) {
+      gsap.fromTo(
+        card,
+        { opacity: 0, y: 40, scale: 0.96 },
+        { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power3.out", delay: 0.8 }
+      );
+    }
+
     return () => ScrollTrigger.getAll().forEach((s) => s.kill());
   }, []);
+
+  const handleSearch = useCallback(() => {
+    navigate({ to: "/explore" });
+  }, [navigate]);
+
+  if (isSessionPending) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-paper">
+        <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Loading session...</p>
+      </main>
+    );
+  }
+
+  if (authenticatedRedirectPath) {
+    return <Navigate to={authenticatedRedirectPath} />;
+  }
 
   return (
     <main>
@@ -72,11 +153,11 @@ function Landing() {
               "url(https://images.unsplash.com/photo-1523805009345-7448845a9e53?auto=format&fit=crop&w=2400&q=80)",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            scale: "1.1",
+            scale: "1.15",
           }}
         />
-        <div className="absolute inset-0 bg-ink/45" />
-        <div className="relative z-10 flex h-full flex-col justify-end px-8 pb-24 text-paper sm:px-12 lg:px-20">
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/30 to-transparent" />
+        <div className="relative z-10 flex h-full flex-col justify-end px-8 pb-32 text-paper sm:px-12 lg:px-20">
           <div className="overflow-hidden">
             <p className="mb-8 text-[10px] uppercase tracking-[0.3em] opacity-80">
               ቤት · Bet · Considered stays across Ethiopia · {listings.length} homes
@@ -95,14 +176,73 @@ function Landing() {
               </span>
             ))}
           </h1>
-          <div className="mt-10 flex flex-wrap items-center gap-6">
-            <Link to="/explore">
-              <MagneticButton>Browse all stays</MagneticButton>
-            </Link>
-            <Link to="/host/new" className="text-xs uppercase tracking-[0.22em] opacity-80 hover:opacity-100">
-              Host on Bet →
-            </Link>
+
+          {/* Floating Search Card */}
+          <div className="search-card mt-10 max-w-3xl rounded-xl p-6 sm:p-8" style={{ opacity: 0 }}>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+              <div className="sm:col-span-1">
+                <label className="text-[10px] uppercase tracking-[0.18em] text-ink/60 font-semibold">
+                  Destination
+                </label>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-accent" />
+                  <input
+                    type="text"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    placeholder="Where to?"
+                    className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink/40"
+                  />
+                </div>
+              </div>
+              <div className="sm:col-span-1 sm:border-l sm:border-border/30 sm:pl-4">
+                <label className="text-[10px] uppercase tracking-[0.18em] text-ink/60 font-semibold">
+                  Check in
+                </label>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-accent" />
+                  <span className="text-sm text-ink/50">Add dates</span>
+                </div>
+              </div>
+              <div className="sm:col-span-1 sm:border-l sm:border-border/30 sm:pl-4">
+                <label className="text-[10px] uppercase tracking-[0.18em] text-ink/60 font-semibold">
+                  Guests
+                </label>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <Users className="h-4 w-4 text-accent" />
+                  <span className="text-sm text-ink/50">Add guests</span>
+                </div>
+              </div>
+              <div className="flex items-end sm:col-span-1">
+                <button
+                  onClick={handleSearch}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-[11px] uppercase tracking-[0.18em] text-accent-foreground transition-all duration-300 hover:bg-accent/90 hover:shadow-lg cursor-pointer"
+                >
+                  <Search className="h-4 w-4" />
+                  <span>Search</span>
+                </button>
+              </div>
+            </div>
           </div>
+        </div>
+      </section>
+
+      {/* Category Rail */}
+      <section className="sticky top-[72px] z-30 border-b border-border/10 bg-paper/95 backdrop-blur-lg py-4 px-8 sm:px-12 lg:px-20">
+        <div className="snap-rail">
+          {CATEGORIES.map((cat, i) => {
+            const Icon = cat.icon;
+            return (
+              <button
+                key={cat.label}
+                onClick={() => setActiveCategory(i)}
+                className={`category-pill ${activeCategory === i ? "active" : ""}`}
+              >
+                <Icon className="pill-icon h-5 w-5" />
+                {cat.label}
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -134,7 +274,7 @@ function Landing() {
               key={r.name}
               to="/explore"
               data-reveal
-              className="group block border-t border-ink/15 pt-6"
+              className="group block border-t border-ink/15 pt-6 hover-lift"
             >
               <h3 className="font-display text-3xl">{r.name}</h3>
               <p className="mt-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">{r.note}</p>
