@@ -9,8 +9,6 @@ import bookingRoutes from "./routes/bookings.ts";
 import paymentRoutes from "./routes/payment.ts";
 import reviewRoutes from "./routes/review.ts";
 import messageRoutes from "./routes/message.ts";
-import { toNodeHandler } from "better-auth/node";
-import { auth } from "./auth.ts";
 import adminRoutes from "./routes/adminRoutes.ts";
 import hostRoutes from "./routes/hostRoutes.ts";
 
@@ -51,18 +49,15 @@ app.use(
   })
 );
 
+// Body parsing middleware (must run before routes)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Connect to database
 connectDB();
 
 // Custom registration route with ZeroBounce
 app.use("/api/auth", authRoutes);
-
-// Better Auth catch-all handler (Express 5 syntax)
-app.all("/api/auth/{*splat}", toNodeHandler(auth));
-
-// Body parsing middleware (must run AFTER Better Auth catch-all)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Root Route
 app.get("/", (req, res) => {
@@ -88,8 +83,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  });
+}
 
 export default app;

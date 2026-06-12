@@ -6,12 +6,14 @@ import bcrypt from "bcryptjs";
 // ---------------------------------------------------------------------------
 
 export type UserRole = "guest" | "host" | "admin";
+export type AuthProvider = "local" | "google";
 
 export interface IUser extends Document {
   _id: Types.ObjectId;
   name: string;
   email: string;
-  password: string;
+  password?: string;
+  authProvider: AuthProvider;
   role: UserRole;
   isVerified: boolean;
   verificationToken?: string | null;
@@ -35,7 +37,12 @@ const UserSchema = new Schema<IUser>(
       lowercase: true,
       trim: true,
     },
-    password: { type: String, required: true },
+    password: { type: String, required: false },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"] satisfies AuthProvider[],
+      default: "local",
+    },
     role: {
       type: String,
       enum: ["guest", "host", "admin"] satisfies UserRole[],
@@ -61,18 +68,18 @@ const UserSchema = new Schema<IUser>(
 UserSchema.methods.matchPassword = async function (
   enteredPassword: string
 ): Promise<boolean> {
+  if (!this.password) return false; // Social-auth users have no password
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Hash password before saving
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    return next();
+// Hash password before saving (skip for social-auth users)
+UserSchema.pre("save", async function () {
+  if (!this.password || !this.isModified("password")) {
+    return;
   }
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // ---------------------------------------------------------------------------
@@ -80,4 +87,4 @@ UserSchema.pre("save", async function (next) {
 // ---------------------------------------------------------------------------
 
 /** Re-use existing model during HMR to avoid OverwriteModelError. */
-export const User = (mongoose as any).models.User ?? model<IUser>("User", UserSchema);
+export const User = (mongoose as any).models.User ?? model<IUser>("User", UserSchema, "user");
