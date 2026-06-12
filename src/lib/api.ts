@@ -1,18 +1,48 @@
-// API service layer for communicating with the backend
+import { getAccessToken, authClient } from "./auth-client";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || ""; // Will be resolved at runtime
 
 // Generic fetch function with error handling and JSON parsing
 const fetcher = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
   try {
-    const response = await fetch(`${API_BASE_URL}${url}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
+    const accessToken = getAccessToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...((options.headers as Record<string, string>) || {}),
+    };
+
+    if (accessToken) {
+      headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+
+    let response = await fetch(`${API_BASE_URL}${url}`, {
+      headers,
       credentials: "include", // Include cookies for session/auth
       ...options,
     });
+
+    // Handle expired access tokens automatically by trying a silent token refresh
+    if (response.status === 401 && !url.includes("/api/auth/refresh") && !url.includes("/api/auth/login") && !url.includes("/api/auth/register")) {
+      console.log(`[API] Received 401 from ${url}, attempting silent refresh...`);
+      const refreshed = await authClient.silentRefresh();
+
+      if (refreshed) {
+        const newAccessToken = getAccessToken();
+        const retryHeaders = {
+          ...headers,
+        };
+        if (newAccessToken) {
+          retryHeaders["Authorization"] = `Bearer ${newAccessToken}`;
+        }
+
+        console.log(`[API] Silent refresh succeeded. Retrying request to ${url}...`);
+        response = await fetch(`${API_BASE_URL}${url}`, {
+          headers: retryHeaders,
+          credentials: "include",
+          ...options,
+        });
+      }
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
