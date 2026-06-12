@@ -6,8 +6,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -19,6 +19,7 @@
   --color-paper-2: var(--paper-2);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-forest: var(--forest);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
@@ -37,14 +38,15 @@
 
 :root {
   --radius: 0.25rem;
-  /* Editorial luxe palette */
-  --paper: oklch(0.975 0.012 85);       /* warm off-white */
-  --paper-2: oklch(0.945 0.018 80);     /* slightly deeper */
-  --ink: oklch(0.18 0.02 60);           /* deep warm ink */
+  /* Editorial luxe palette — sun-bleached linen, terracotta, forest green */
+  --paper: oklch(0.975 0.012 85);       /* warm creamy off-white */
+  --paper-2: oklch(0.945 0.018 80);     /* sand texture */
+  --ink: oklch(0.18 0.02 60);           /* deep warm charcoal */
   --background: var(--paper);
   --foreground: var(--ink);
-  --accent: oklch(0.55 0.13 40);        /* muted terracotta */
+  --accent: oklch(0.55 0.13 40);        /* earthy terracotta */
   --accent-foreground: oklch(0.985 0.005 80);
+  --forest: oklch(0.35 0.06 140);       /* deep forest green */
   --muted: oklch(0.92 0.015 75);
   --muted-foreground: oklch(0.45 0.02 60);
   --border: oklch(0.18 0.02 60 / 0.15);
@@ -69,6 +71,7 @@
   --foreground: var(--ink);
   --accent: oklch(0.65 0.14 40);
   --accent-foreground: oklch(0.16 0.015 60);
+  --forest: oklch(0.55 0.06 140);
   --muted: oklch(0.25 0.02 60);
   --muted-foreground: oklch(0.7 0.02 70);
   --border: oklch(1 0 0 / 0.12);
@@ -88,28 +91,159 @@
 @layer base {
   * { border-color: var(--color-border); }
   html, body { background-color: var(--color-background); color: var(--color-foreground); }
+  html { scroll-behavior: smooth; }
   body {
     font-family: var(--font-sans);
-    font-feature-settings: "ss01", "cv11";
+    font-optical-sizing: auto;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    line-height: 1.6;
   }
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
     font-weight: 400;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
   }
+  h1 { font-size: clamp(2rem, 5vw + 1rem, 4.5rem); }
+  h2 { font-size: clamp(1.5rem, 3vw + 0.5rem, 3rem); }
+  h3 { font-size: clamp(1.25rem, 2vw + 0.25rem, 2rem); }
 }
 
-/* Reduce motion */
+/* ─────────────────────────────────────────────
+   Reduce motion
+   ───────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* Leaflet polish */
+/* ─────────────────────────────────────────────
+   Scroll-reveal animation (used by IntersectionObserver)
+   ───────────────────────────────────────────── */
+.reveal-fade-up {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal-fade-up.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────────────
+   Card hover-lift
+   ───────────────────────────────────────────── */
+.hover-lift {
+  transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -12px rgba(0,0,0,0.12);
+}
+
+/* ─────────────────────────────────────────────
+   Frosted glass utilities
+   ───────────────────────────────────────────── */
+.glass {
+  background: oklch(from var(--paper) l c h / 0.8);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+.glass-strong {
+  background: oklch(from var(--paper) l c h / 0.92);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+}
+
+/* ─────────────────────────────────────────────
+   Floating label inputs
+   ───────────────────────────────────────────── */
+.floating-label-group {
+  position: relative;
+}
+.floating-label-group input,
+.floating-label-group textarea {
+  width: 100%;
+  padding: 1.25rem 0 0.5rem;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+.floating-label-group input:focus,
+.floating-label-group textarea:focus {
+  border-bottom-color: var(--ink);
+}
+.floating-label-group label {
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+.floating-label-group input:focus + label,
+.floating-label-group input:not(:placeholder-shown) + label,
+.floating-label-group textarea:focus + label,
+.floating-label-group textarea:not(:placeholder-shown) + label {
+  top: 0;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+}
+
+/* ─────────────────────────────────────────────
+   Horizontal scroll snapping (category rail)
+   ───────────────────────────────────────────── */
+.snap-rail {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 1rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.snap-rail::-webkit-scrollbar { display: none; }
+.snap-rail > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────
+   Shake animation (form error feedback)
+   ───────────────────────────────────────────── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+.shake {
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+/* ─────────────────────────────────────────────
+   Confetti-ready overlay
+   ───────────────────────────────────────────── */
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ─────────────────────────────────────────────
+   Leaflet polish
+   ───────────────────────────────────────────── */
 .leaflet-container {
   background: var(--paper-2);
   font-family: var(--font-sans);
@@ -120,24 +254,154 @@
 .luxe-marker {
   display: flex; align-items: center; justify-content: center;
   background: var(--ink); color: var(--paper);
-  border-radius: 999px; padding: 4px 10px;
+  border-radius: 999px; padding: 4px 12px;
   font-size: 12px; font-weight: 600; letter-spacing: 0.02em;
   white-space: nowrap;
   box-shadow: 0 4px 14px rgba(0,0,0,0.18);
   transform-origin: center bottom;
   will-change: transform;
+  transition: transform 0.3s ease, background 0.3s ease;
 }
-.luxe-marker.active { background: var(--accent); color: var(--accent-foreground); }
+.luxe-marker.active {
+  background: var(--accent); color: var(--accent-foreground);
+  transform: scale(1.15);
+}
 
 /* Hide default leaflet marker shadow box */
 .leaflet-div-icon { background: transparent; border: none; }
 
-/* Pretty scrollbar in feed */
+/* ─────────────────────────────────────────────
+   Feed scrollbar
+   ───────────────────────────────────────────── */
 .feed-scroll::-webkit-scrollbar { width: 6px; }
 .feed-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
 
-/* Page transition curtain */
+/* ─────────────────────────────────────────────
+   Page transition curtain
+   ───────────────────────────────────────────── */
 .page-curtain {
   position: fixed; inset: 0; z-index: 60; pointer-events: none;
   background: var(--ink); transform-origin: top;
+}
+
+/* ─────────────────────────────────────────────
+   Masonry-like stagger grid
+   ───────────────────────────────────────────── */
+.masonry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+}
+@media (min-width: 768px) {
+  .masonry-grid > *:nth-child(3n+2) {
+    transform: translateY(2rem);
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Category pill (hover bounce)
+   ───────────────────────────────────────────── */
+.category-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted-foreground);
+  background: transparent;
+  white-space: nowrap;
+}
+.category-pill:hover, .category-pill.active {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: var(--paper-2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -8px rgba(0,0,0,0.1);
+}
+.category-pill.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+.category-pill .pill-icon {
+  font-size: 1.25rem;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.category-pill:hover .pill-icon {
+  transform: scale(1.1) translateY(-2px);
+}
+
+/* ─────────────────────────────────────────────
+   Search card overlay (homepage hero)
+   ───────────────────────────────────────────── */
+.search-card {
+  background: oklch(from var(--paper) l c h / 0.92);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+  border: 1px solid oklch(1 0 0 / 0.15);
+  box-shadow: 0 24px 48px -12px rgba(0,0,0,0.2),
+              0 0 0 1px rgba(255,255,255,0.06) inset;
+}
+
+/* ─────────────────────────────────────────────
+   Image gallery overlay
+   ───────────────────────────────────────────── */
+.gallery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0,0,0,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gallery-overlay img {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+}
+
+/* ─────────────────────────────────────────────
+   Star rating bar chart utility
+   ───────────────────────────────────────────── */
+.rating-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--muted);
+  overflow: hidden;
+}
+.rating-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ink);
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ─────────────────────────────────────────────
+   Spring toggle animation
+   ───────────────────────────────────────────── */
+@keyframes spring-check {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  75% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.spring-check {
+  animation: spring-check 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ─────────────────────────────────────────────
+   Sparkline utility
+   ───────────────────────────────────────────── */
+.sparkline {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
 }
